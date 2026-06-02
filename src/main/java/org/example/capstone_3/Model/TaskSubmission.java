@@ -9,36 +9,33 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "mock_interview_reports")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class MockInterviewReport {
+@AllArgsConstructor
+public class TaskSubmission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(columnDefinition = "TEXT")
-    private String summary;
+    private String answerText;
+
+    private String status;
+
+    private Integer score;
+
+    private LocalDateTime submittedAt;
 
     @Column(columnDefinition = "TEXT")
-    private String strengths;
+    private String aiFeedback;
 
-    @Column(columnDefinition = "TEXT")
-    private String weaknesses;
-
-    @Column(columnDefinition = "TEXT")
-    private String recommendations;
-
-    private LocalDateTime generatedAt;
+    @ManyToOne
+    @JoinColumn(name = "task_id")
+    private Task task;
 
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
-
-    @OneToOne
-    @JoinColumn(name = "mock_interview_id")
-    private MockInterview mockInterview;
 }

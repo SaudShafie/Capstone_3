@@ -29,4 +29,7 @@ public class Admin {
     private LocalDateTime createdAt;
 
     //test
+    private LocalDateTime updatedAt;
+    private Boolean active;
+
 }

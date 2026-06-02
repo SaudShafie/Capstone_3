@@ -1,5 +1,5 @@
 package org.example.capstone_3.Model;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,23 +7,24 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
-@Table(name = "reviews")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class Review {
+@AllArgsConstructor
+public class Roadmap {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private Integer rating;
+    private String title;
 
-    @Column(columnDefinition = "TEXT")
-    private String comment;
+    private String targetRole;
+
+    private Integer progressPercentage;
 
     private LocalDateTime createdAt;
 
@@ -31,8 +32,11 @@ public class Review {
     @JoinColumn(name = "student_id")
     private Student student;
 
-    @ManyToOne
-    @JoinColumn(name = "mentor_id")
-    private Mentor mentor;
+    @OneToOne
+    @JoinColumn(name = "job_analysis_id")
+    private JobAnalysis jobAnalysis;
 
+    @OneToMany(mappedBy = "roadmap", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<RoadmapStep> roadmapSteps;
 }

@@ -1,7 +1,7 @@
 package org.example.capstone_3.Controller;
 
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiResponse;
 import org.example.capstone_3.DTO.IN.ChallengeAttemptDTOIN;
 import org.example.capstone_3.Service.ChallengeAttemptService;
@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/challenge-attempt")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ChallengeAttemptController {
 
-    private ChallengeAttemptService challengeAttemptService;
+    private final ChallengeAttemptService challengeAttemptService;
 
     @GetMapping("/get")
     public ResponseEntity<?> get() {

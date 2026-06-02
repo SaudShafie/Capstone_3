@@ -1,6 +1,5 @@
 package org.example.capstone_3.Service;
 
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.MockInterviewDTOIN;
@@ -9,7 +8,10 @@ import org.example.capstone_3.Model.JobAnalysis;
 import org.example.capstone_3.Model.Mentor;
 import org.example.capstone_3.Model.MockInterview;
 import org.example.capstone_3.Model.Student;
+import org.example.capstone_3.Repository.JobAnalysisRepository;
+import org.example.capstone_3.Repository.MentorRepository;
 import org.example.capstone_3.Repository.MockInterviewRepository;
+import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +21,9 @@ import java.util.List;
 public class MockInterviewService {
 
     private final MockInterviewRepository mockInterviewRepository;
-    private final EntityManager entityManager;
+    private final StudentRepository studentRepository;
+    private final MentorRepository mentorRepository;
+    private final JobAnalysisRepository jobAnalysisRepository;
 
     public MockInterviewDTOOUT create(MockInterviewDTOIN dto) {
         MockInterview mockInterview = new MockInterview();
@@ -75,7 +79,7 @@ public class MockInterviewService {
         if (studentId == null) {
             return null;
         }
-        Student student = entityManager.find(Student.class, studentId);
+        Student student = studentRepository.findStudentById(studentId);
         if (student == null) {
             throw new ApiException("Student with id " + studentId + " not found");
         }
@@ -86,7 +90,7 @@ public class MockInterviewService {
         if (mentorId == null) {
             return null;
         }
-        Mentor mentor = entityManager.find(Mentor.class, mentorId);
+        Mentor mentor = mentorRepository.findMentorById(mentorId);
         if (mentor == null) {
             throw new ApiException("Mentor with id " + mentorId + " not found");
         }
@@ -97,7 +101,7 @@ public class MockInterviewService {
         if (jobAnalysisId == null) {
             return null;
         }
-        JobAnalysis jobAnalysis = entityManager.find(JobAnalysis.class, jobAnalysisId);
+        JobAnalysis jobAnalysis = jobAnalysisRepository.findJobAnalysisById(jobAnalysisId);
         if (jobAnalysis == null) {
             throw new ApiException("Job analysis with id " + jobAnalysisId + " not found");
         }

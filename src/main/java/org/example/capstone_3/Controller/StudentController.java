@@ -1,45 +1,45 @@
 package org.example.capstone_3.Controller;
 
-import org.example.capstone_3.DTO.IN.StudentDTOIn;
-import org.example.capstone_3.Service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.capstone_3.Api.ApiResponse;
+import org.example.capstone_3.DTO.IN.StudentDTOIn;
+import org.example.capstone_3.Service.StudentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/api/v1/students")
 @RestController
+@RequestMapping("/api/v1/student")
 @RequiredArgsConstructor
 public class StudentController {
 
     private final StudentService studentService;
 
-    @PostMapping
-    public ResponseEntity<?> addStudent(@RequestBody @Valid StudentDTOIn studentDTOIn) {
-        studentService.addStudent(studentDTOIn);
-        return ResponseEntity.status(201).body("Student added successfully");
+    @GetMapping("/get")
+    public ResponseEntity<?> get() {
+        return ResponseEntity.ok(studentService.getAll());
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllStudents() {
-        return ResponseEntity.status(200).body(studentService.getAllStudents());
+    @GetMapping("/get/{id}")
+    public ResponseEntity<?> getStudentById(@PathVariable Integer id) {
+        return ResponseEntity.ok(studentService.getById(id));
     }
 
-    @GetMapping("/{studentId}")
-    public ResponseEntity<?> getStudentById(@PathVariable Integer studentId) {
-        return ResponseEntity.status(200).body(studentService.getStudentById(studentId));
+    @PostMapping("/add")
+    public ResponseEntity<?> saveStudent(@RequestBody @Valid StudentDTOIn studentDTOIn) {
+        studentService.create(studentDTOIn);
+        return ResponseEntity.ok().body(new ApiResponse("Student has been saved successfully"));
     }
 
-    @PutMapping("/{studentId}")
-    public ResponseEntity<?> updateStudent(@PathVariable Integer studentId,
-                                           @RequestBody @Valid StudentDTOIn studentDTOIn) {
-        studentService.updateStudent(studentId, studentDTOIn);
-        return ResponseEntity.status(200).body("Student updated successfully");
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateStudent(@PathVariable Integer id, @RequestBody @Valid StudentDTOIn studentDTOIn) {
+        studentService.update(id, studentDTOIn);
+        return ResponseEntity.ok().body(new ApiResponse("Student has been updated successfully"));
     }
 
-    @DeleteMapping("/{studentId}")
-    public ResponseEntity<?> deleteStudent(@PathVariable Integer studentId) {
-        studentService.deleteStudent(studentId);
-        return ResponseEntity.status(200).body("Student deleted successfully");
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteStudent(@PathVariable Integer id) {
+        studentService.delete(id);
+        return ResponseEntity.ok().body(new ApiResponse("Student has been deleted successfully"));
     }
 }

@@ -1,51 +1,45 @@
 package org.example.capstone_3.Controller;
 
-import org.example.capstone_3.DTO.IN.JobAnalysisDTOIn;
-import org.example.capstone_3.Service.JobAnalysisService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.capstone_3.Api.ApiResponse;
+import org.example.capstone_3.DTO.IN.JobAnalysisDTOIn;
+import org.example.capstone_3.Service.JobAnalysisService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/api/v1/job-analyses")
 @RestController
+@RequestMapping("/api/v1/job-analysis")
 @RequiredArgsConstructor
 public class JobAnalysisController {
 
     private final JobAnalysisService jobAnalysisService;
 
-    @PostMapping("/student/{studentId}")
-    public ResponseEntity<?> addJobAnalysis(@PathVariable Integer studentId,
-                                            @RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
-        jobAnalysisService.addJobAnalysis(studentId, jobAnalysisDTOIn);
-        return ResponseEntity.status(201).body("Job analysis added successfully");
+    @GetMapping("/get")
+    public ResponseEntity<?> get() {
+        return ResponseEntity.ok(jobAnalysisService.getAll());
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllJobAnalyses() {
-        return ResponseEntity.status(200).body(jobAnalysisService.getAllJobAnalyses());
+    @GetMapping("/get/{id}")
+    public ResponseEntity<?> getJobAnalysisById(@PathVariable Integer id) {
+        return ResponseEntity.ok(jobAnalysisService.getById(id));
     }
 
-    @GetMapping("/{jobAnalysisId}")
-    public ResponseEntity<?> getJobAnalysisById(@PathVariable Integer jobAnalysisId) {
-        return ResponseEntity.status(200).body(jobAnalysisService.getJobAnalysisById(jobAnalysisId));
+    @PostMapping("/add")
+    public ResponseEntity<?> saveJobAnalysis(@RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
+        jobAnalysisService.create(jobAnalysisDTOIn);
+        return ResponseEntity.ok().body(new ApiResponse("Job analysis has been saved successfully"));
     }
 
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<?> getJobAnalysesByStudentId(@PathVariable Integer studentId) {
-        return ResponseEntity.status(200).body(jobAnalysisService.getJobAnalysesByStudentId(studentId));
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateJobAnalysis(@PathVariable Integer id, @RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
+        jobAnalysisService.update(id, jobAnalysisDTOIn);
+        return ResponseEntity.ok().body(new ApiResponse("Job analysis has been updated successfully"));
     }
 
-    @PutMapping("/{jobAnalysisId}")
-    public ResponseEntity<?> updateJobAnalysis(@PathVariable Integer jobAnalysisId,
-                                               @RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
-        jobAnalysisService.updateJobAnalysis(jobAnalysisId, jobAnalysisDTOIn);
-        return ResponseEntity.status(200).body("Job analysis updated successfully");
-    }
-
-    @DeleteMapping("/{jobAnalysisId}")
-    public ResponseEntity<?> deleteJobAnalysis(@PathVariable Integer jobAnalysisId) {
-        jobAnalysisService.deleteJobAnalysis(jobAnalysisId);
-        return ResponseEntity.status(200).body("Job analysis deleted successfully");
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteJobAnalysis(@PathVariable Integer id) {
+        jobAnalysisService.delete(id);
+        return ResponseEntity.ok().body(new ApiResponse("Job analysis has been deleted successfully"));
     }
 }

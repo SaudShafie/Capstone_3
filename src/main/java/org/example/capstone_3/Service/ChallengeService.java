@@ -1,6 +1,5 @@
 package org.example.capstone_3.Service;
 
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.ChallengeDTOIN;
@@ -8,6 +7,7 @@ import org.example.capstone_3.DTO.OUT.ChallengeDTOOUT;
 import org.example.capstone_3.Model.Challenge;
 import org.example.capstone_3.Model.Skill;
 import org.example.capstone_3.Repository.ChallengeRepository;
+import org.example.capstone_3.Repository.SkillRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.List;
 public class ChallengeService {
 
     private final ChallengeRepository challengeRepository;
-    private final EntityManager entityManager;
+    private final SkillRepository skillRepository;
 
     public ChallengeDTOOUT create(ChallengeDTOIN dto) {
         Challenge challenge = new Challenge();
@@ -67,7 +67,7 @@ public class ChallengeService {
         if (skillId == null) {
             return null;
         }
-        Skill skill = entityManager.find(Skill.class, skillId);
+        Skill skill = skillRepository.findSkillById(skillId);
         if (skill == null) {
             throw new ApiException("Skill with id " + skillId + " not found");
         }

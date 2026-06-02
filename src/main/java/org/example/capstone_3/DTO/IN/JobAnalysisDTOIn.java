@@ -16,5 +16,5 @@ public class JobAnalysisDTOIn {
 
     private String requiredSkillsText;
 
-
+    private Integer studentId;
 }

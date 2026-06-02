@@ -1,14 +1,14 @@
 package org.example.capstone_3.Service;
 
+import lombok.RequiredArgsConstructor;
+import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.AdminDTOIn;
 import org.example.capstone_3.DTO.OUT.AdminDTOOut;
 import org.example.capstone_3.Model.Admin;
 import org.example.capstone_3.Repository.AdminRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,60 +17,49 @@ public class AdminService {
 
     private final AdminRepository adminRepository;
 
-    public void addAdmin(AdminDTOIn adminDTOIn) {
-
+    public AdminDTOOut create(AdminDTOIn dto) {
         Admin admin = new Admin();
-
-        admin.setFullName(adminDTOIn.getFullName());
-        admin.setEmail(adminDTOIn.getEmail());
-        admin.setPassword(adminDTOIn.getPassword());
+        applyDto(admin, dto);
         admin.setCreatedAt(LocalDateTime.now());
-
-        adminRepository.save(admin);
+        return toDtoOut(adminRepository.save(admin));
     }
 
-    public List<AdminDTOOut> getAllAdmins() {
-
-        List<Admin> admins = adminRepository.findAll();
-
-        List<AdminDTOOut> adminDTOOuts = new ArrayList<>();
-
-        for (Admin admin : admins) {
-            adminDTOOuts.add(mapToAdminDTOOut(admin));
+    public AdminDTOOut getById(Integer id) {
+        Admin admin = adminRepository.findAdminById(id);
+        if (admin == null) {
+            throw new ApiException("Admin with id " + id + " not found");
         }
-
-        return adminDTOOuts;
+        return toDtoOut(admin);
     }
 
-    public AdminDTOOut getAdminById(Integer adminId) {
-
-        Admin admin = adminRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
-
-        return mapToAdminDTOOut(admin);
+    public List<AdminDTOOut> getAll() {
+        return adminRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    public void updateAdmin(Integer adminId, AdminDTOIn adminDTOIn) {
-
-        Admin admin = adminRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
-
-        admin.setFullName(adminDTOIn.getFullName());
-        admin.setEmail(adminDTOIn.getEmail());
-        admin.setPassword(adminDTOIn.getPassword());
-
-        adminRepository.save(admin);
+    public AdminDTOOut update(Integer id, AdminDTOIn dto) {
+        Admin admin = adminRepository.findAdminById(id);
+        if (admin == null) {
+            throw new ApiException("Admin with id " + id + " not found");
+        }
+        applyDto(admin, dto);
+        return toDtoOut(adminRepository.save(admin));
     }
 
-    public void deleteAdmin(Integer adminId) {
-
-        Admin admin = adminRepository.findById(adminId).orElseThrow(() -> new RuntimeException("Admin not found"));
-
-        adminRepository.delete(admin);
+    public void delete(Integer id) {
+        Admin admin = adminRepository.findAdminById(id);
+        if (admin == null) {
+            throw new ApiException("Admin with id " + id + " not found");
+        }
+        adminRepository.deleteById(id);
     }
 
-    private AdminDTOOut mapToAdminDTOOut(Admin admin) {
+    private void applyDto(Admin admin, AdminDTOIn dto) {
+        admin.setFullName(dto.getFullName());
+        admin.setEmail(dto.getEmail());
+        admin.setPassword(dto.getPassword());
+    }
 
+    private AdminDTOOut toDtoOut(Admin admin) {
         return new AdminDTOOut(
                 admin.getId(),
                 admin.getFullName(),

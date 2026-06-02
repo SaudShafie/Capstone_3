@@ -1,6 +1,5 @@
 package org.example.capstone_3.Service;
 
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.ChallengeAttemptDTOIN;
@@ -10,6 +9,7 @@ import org.example.capstone_3.Model.ChallengeAttempt;
 import org.example.capstone_3.Model.Student;
 import org.example.capstone_3.Repository.ChallengeAttemptRepository;
 import org.example.capstone_3.Repository.ChallengeRepository;
+import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public class ChallengeAttemptService {
 
     private final ChallengeAttemptRepository challengeAttemptRepository;
     private final ChallengeRepository challengeRepository;
-    private final EntityManager entityManager;
+    private final StudentRepository studentRepository;
 
     public ChallengeAttemptDTOOUT create(ChallengeAttemptDTOIN dto) {
         ChallengeAttempt challengeAttempt = new ChallengeAttempt();
@@ -70,7 +70,7 @@ public class ChallengeAttemptService {
         if (studentId == null) {
             return null;
         }
-        Student student = entityManager.find(Student.class, studentId);
+        Student student = studentRepository.findStudentById(studentId);
         if (student == null) {
             throw new ApiException("Student with id " + studentId + " not found");
         }

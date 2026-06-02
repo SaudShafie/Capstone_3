@@ -1,45 +1,45 @@
 package org.example.capstone_3.Controller;
 
-import org.example.capstone_3.DTO.IN.MentorDTOIn;
-import org.example.capstone_3.Service.MentorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.capstone_3.Api.ApiResponse;
+import org.example.capstone_3.DTO.IN.MentorDTOIn;
+import org.example.capstone_3.Service.MentorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/api/v1/mentors")
 @RestController
+@RequestMapping("/api/v1/mentor")
 @RequiredArgsConstructor
 public class MentorController {
 
     private final MentorService mentorService;
 
-    @PostMapping
-    public ResponseEntity<?> addMentor(@RequestBody @Valid MentorDTOIn mentorDTOIn) {
-        mentorService.addMentor(mentorDTOIn);
-        return ResponseEntity.status(201).body("Mentor added successfully");
+    @GetMapping("/get")
+    public ResponseEntity<?> get() {
+        return ResponseEntity.ok(mentorService.getAll());
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllMentors() {
-        return ResponseEntity.status(200).body(mentorService.getAllMentors());
+    @GetMapping("/get/{id}")
+    public ResponseEntity<?> getMentorById(@PathVariable Integer id) {
+        return ResponseEntity.ok(mentorService.getById(id));
     }
 
-    @GetMapping("/{mentorId}")
-    public ResponseEntity<?> getMentorById(@PathVariable Integer mentorId) {
-        return ResponseEntity.status(200).body(mentorService.getMentorById(mentorId));
+    @PostMapping("/add")
+    public ResponseEntity<?> saveMentor(@RequestBody @Valid MentorDTOIn mentorDTOIn) {
+        mentorService.create(mentorDTOIn);
+        return ResponseEntity.ok().body(new ApiResponse("Mentor has been saved successfully"));
     }
 
-    @PutMapping("/{mentorId}")
-    public ResponseEntity<?> updateMentor(@PathVariable Integer mentorId,
-                                          @RequestBody @Valid MentorDTOIn mentorDTOIn) {
-        mentorService.updateMentor(mentorId, mentorDTOIn);
-        return ResponseEntity.status(200).body("Mentor updated successfully");
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateMentor(@PathVariable Integer id, @RequestBody @Valid MentorDTOIn mentorDTOIn) {
+        mentorService.update(id, mentorDTOIn);
+        return ResponseEntity.ok().body(new ApiResponse("Mentor has been updated successfully"));
     }
 
-    @DeleteMapping("/{mentorId}")
-    public ResponseEntity<?> deleteMentor(@PathVariable Integer mentorId) {
-        mentorService.deleteMentor(mentorId);
-        return ResponseEntity.status(200).body("Mentor deleted successfully");
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteMentor(@PathVariable Integer id) {
+        mentorService.delete(id);
+        return ResponseEntity.ok().body(new ApiResponse("Mentor has been deleted successfully"));
     }
 }

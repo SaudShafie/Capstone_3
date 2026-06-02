@@ -1,57 +1,45 @@
 package org.example.capstone_3.Controller;
 
-import org.example.capstone_3.DTO.IN.JobAnalysisReportDTOIn;
-import org.example.capstone_3.Service.JobAnalysisReportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.capstone_3.Api.ApiResponse;
+import org.example.capstone_3.DTO.IN.JobAnalysisReportDTOIn;
+import org.example.capstone_3.Service.JobAnalysisReportService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/api/v1/job-analysis-reports")
 @RestController
+@RequestMapping("/api/v1/job-analysis-report")
 @RequiredArgsConstructor
 public class JobAnalysisReportController {
 
     private final JobAnalysisReportService jobAnalysisReportService;
 
-    @PostMapping("/student/{studentId}/job-analysis/{jobAnalysisId}")
-    public ResponseEntity<?> addJobAnalysisReport(@PathVariable Integer studentId,
-                                                  @PathVariable Integer jobAnalysisId,
-                                                  @RequestBody @Valid JobAnalysisReportDTOIn jobAnalysisReportDTOIn) {
-        jobAnalysisReportService.addJobAnalysisReport(studentId, jobAnalysisId, jobAnalysisReportDTOIn);
-        return ResponseEntity.status(201).body("Job analysis report added successfully");
+    @GetMapping("/get")
+    public ResponseEntity<?> get() {
+        return ResponseEntity.ok(jobAnalysisReportService.getAll());
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllJobAnalysisReports() {
-        return ResponseEntity.status(200).body(jobAnalysisReportService.getAllJobAnalysisReports());
+    @GetMapping("/get/{id}")
+    public ResponseEntity<?> getJobAnalysisReportById(@PathVariable Integer id) {
+        return ResponseEntity.ok(jobAnalysisReportService.getById(id));
     }
 
-    @GetMapping("/{reportId}")
-    public ResponseEntity<?> getJobAnalysisReportById(@PathVariable Integer reportId) {
-        return ResponseEntity.status(200).body(jobAnalysisReportService.getJobAnalysisReportById(reportId));
+    @PostMapping("/add")
+    public ResponseEntity<?> saveJobAnalysisReport(@RequestBody @Valid JobAnalysisReportDTOIn jobAnalysisReportDTOIn) {
+        jobAnalysisReportService.create(jobAnalysisReportDTOIn);
+        return ResponseEntity.ok().body(new ApiResponse("Job analysis report has been saved successfully"));
     }
 
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<?> getReportsByStudentId(@PathVariable Integer studentId) {
-        return ResponseEntity.status(200).body(jobAnalysisReportService.getReportsByStudentId(studentId));
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateJobAnalysisReport(@PathVariable Integer id, @RequestBody @Valid JobAnalysisReportDTOIn jobAnalysisReportDTOIn) {
+        jobAnalysisReportService.update(id, jobAnalysisReportDTOIn);
+        return ResponseEntity.ok().body(new ApiResponse("Job analysis report has been updated successfully"));
     }
 
-    @GetMapping("/job-analysis/{jobAnalysisId}")
-    public ResponseEntity<?> getReportByJobAnalysisId(@PathVariable Integer jobAnalysisId) {
-        return ResponseEntity.status(200).body(jobAnalysisReportService.getReportByJobAnalysisId(jobAnalysisId));
-    }
-
-    @PutMapping("/{reportId}")
-    public ResponseEntity<?> updateJobAnalysisReport(@PathVariable Integer reportId,
-                                                     @RequestBody @Valid JobAnalysisReportDTOIn jobAnalysisReportDTOIn) {
-        jobAnalysisReportService.updateJobAnalysisReport(reportId, jobAnalysisReportDTOIn);
-        return ResponseEntity.status(200).body("Job analysis report updated successfully");
-    }
-
-    @DeleteMapping("/{reportId}")
-    public ResponseEntity<?> deleteJobAnalysisReport(@PathVariable Integer reportId) {
-        jobAnalysisReportService.deleteJobAnalysisReport(reportId);
-        return ResponseEntity.status(200).body("Job analysis report deleted successfully");
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteJobAnalysisReport(@PathVariable Integer id) {
+        jobAnalysisReportService.delete(id);
+        return ResponseEntity.ok().body(new ApiResponse("Job analysis report has been deleted successfully"));
     }
 }

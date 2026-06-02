@@ -1,6 +1,5 @@
 package org.example.capstone_3.Service;
 
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.MockInterviewReportDTOIN;
@@ -10,6 +9,7 @@ import org.example.capstone_3.Model.MockInterviewReport;
 import org.example.capstone_3.Model.Student;
 import org.example.capstone_3.Repository.MockInterviewReportRepository;
 import org.example.capstone_3.Repository.MockInterviewRepository;
+import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public class MockInterviewReportService {
 
     private final MockInterviewReportRepository mockInterviewReportRepository;
     private final MockInterviewRepository mockInterviewRepository;
-    private final EntityManager entityManager;
+    private final StudentRepository studentRepository;
 
     public MockInterviewReportDTOOUT create(MockInterviewReportDTOIN dto) {
         MockInterviewReport mockInterviewReport = new MockInterviewReport();
@@ -71,7 +71,7 @@ public class MockInterviewReportService {
         if (studentId == null) {
             return null;
         }
-        Student student = entityManager.find(Student.class, studentId);
+        Student student = studentRepository.findStudentById(studentId);
         if (student == null) {
             throw new ApiException("Student with id " + studentId + " not found");
         }

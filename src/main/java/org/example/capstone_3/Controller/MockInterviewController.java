@@ -1,7 +1,7 @@
 package org.example.capstone_3.Controller;
 
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiResponse;
 import org.example.capstone_3.DTO.IN.MockInterviewDTOIN;
 import org.example.capstone_3.Service.MockInterviewService;
@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/mock-interview")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class MockInterviewController {
 
-    private MockInterviewService mockInterviewService;
+    private final MockInterviewService mockInterviewService;
 
     @GetMapping("/get")
     public ResponseEntity<?> get() {

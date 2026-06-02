@@ -1,14 +1,14 @@
 package org.example.capstone_3.Service;
 
+import lombok.RequiredArgsConstructor;
+import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.StudentDTOIn;
 import org.example.capstone_3.DTO.OUT.StudentDTOOut;
 import org.example.capstone_3.Model.Student;
 import org.example.capstone_3.Repository.StudentRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,76 +17,57 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
 
-    public void addStudent(StudentDTOIn studentDTOIn) {
-
+    public StudentDTOOut create(StudentDTOIn dto) {
         Student student = new Student();
-
-        student.setFullName(studentDTOIn.getFullName());
-        student.setEmail(studentDTOIn.getEmail());
-        student.setPassword(studentDTOIn.getPassword());
-        student.setMajor(studentDTOIn.getMajor());
-        student.setTargetRole(studentDTOIn.getTargetRole());
-        student.setYearsExperience(studentDTOIn.getYearsExperience());
-        student.setLinkedinUrl(studentDTOIn.getLinkedinUrl());
-        student.setGithubUrl(studentDTOIn.getGithubUrl());
-        student.setCvText(studentDTOIn.getCvText());
-
+        applyDto(student, dto);
         student.setXp(0);
         student.setReadinessScore(0);
         student.setCreatedAt(LocalDateTime.now());
-
-        studentRepository.save(student);
+        return toDtoOut(studentRepository.save(student));
     }
 
-    public List<StudentDTOOut> getAllStudents() {
-
-        List<Student> students = studentRepository.findAll();
-
-        List<StudentDTOOut> studentDTOOuts = new ArrayList<>();
-
-        for (Student student : students) {
-            studentDTOOuts.add(mapToStudentDTOOut(student));
+    public StudentDTOOut getById(Integer id) {
+        Student student = studentRepository.findStudentById(id);
+        if (student == null) {
+            throw new ApiException("Student with id " + id + " not found");
         }
-
-        return studentDTOOuts;
+        return toDtoOut(student);
     }
 
-    public StudentDTOOut getStudentById(Integer studentId) {
-
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-
-        return mapToStudentDTOOut(student);
+    public List<StudentDTOOut> getAll() {
+        return studentRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    public void updateStudent(Integer studentId, StudentDTOIn studentDTOIn) {
-
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-
-        student.setFullName(studentDTOIn.getFullName());
-        student.setEmail(studentDTOIn.getEmail());
-        student.setPassword(studentDTOIn.getPassword());
-        student.setMajor(studentDTOIn.getMajor());
-        student.setTargetRole(studentDTOIn.getTargetRole());
-        student.setYearsExperience(studentDTOIn.getYearsExperience());
-        student.setLinkedinUrl(studentDTOIn.getLinkedinUrl());
-        student.setGithubUrl(studentDTOIn.getGithubUrl());
-        student.setCvText(studentDTOIn.getCvText());
-
-        studentRepository.save(student);
+    public StudentDTOOut update(Integer id, StudentDTOIn dto) {
+        Student student = studentRepository.findStudentById(id);
+        if (student == null) {
+            throw new ApiException("Student with id " + id + " not found");
+        }
+        applyDto(student, dto);
+        return toDtoOut(studentRepository.save(student));
     }
 
-    public void deleteStudent(Integer studentId) {
-
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-
-        studentRepository.delete(student);
+    public void delete(Integer id) {
+        Student student = studentRepository.findStudentById(id);
+        if (student == null) {
+            throw new ApiException("Student with id " + id + " not found");
+        }
+        studentRepository.deleteById(id);
     }
 
-    private StudentDTOOut mapToStudentDTOOut(Student student) {
+    private void applyDto(Student student, StudentDTOIn dto) {
+        student.setFullName(dto.getFullName());
+        student.setEmail(dto.getEmail());
+        student.setPassword(dto.getPassword());
+        student.setMajor(dto.getMajor());
+        student.setTargetRole(dto.getTargetRole());
+        student.setYearsExperience(dto.getYearsExperience());
+        student.setLinkedinUrl(dto.getLinkedinUrl());
+        student.setGithubUrl(dto.getGithubUrl());
+        student.setCvText(dto.getCvText());
+    }
 
+    private StudentDTOOut toDtoOut(Student student) {
         return new StudentDTOOut(
                 student.getId(),
                 student.getFullName(),

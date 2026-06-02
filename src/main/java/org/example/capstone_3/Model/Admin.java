@@ -27,4 +27,9 @@ public class Admin {
     private String password;
 
     private LocalDateTime createdAt;
+
+    //test
+    private LocalDateTime updatedAt;
+    private Boolean active;
+
 }

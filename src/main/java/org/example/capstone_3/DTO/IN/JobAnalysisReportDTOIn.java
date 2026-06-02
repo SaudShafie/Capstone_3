@@ -14,4 +14,8 @@ public class JobAnalysisReportDTOIn {
     private String improvements;
 
     private String recommendations;
+
+    private Integer studentId;
+
+    private Integer jobAnalysisId;
 }

@@ -1,14 +1,14 @@
 package org.example.capstone_3.Service;
 
+import lombok.RequiredArgsConstructor;
+import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.MentorDTOIn;
 import org.example.capstone_3.DTO.OUT.MentorDTOOut;
 import org.example.capstone_3.Model.Mentor;
 import org.example.capstone_3.Repository.MentorRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,79 +17,58 @@ public class MentorService {
 
     private final MentorRepository mentorRepository;
 
-    public void addMentor(MentorDTOIn mentorDTOIn) {
-
+    public MentorDTOOut create(MentorDTOIn dto) {
         Mentor mentor = new Mentor();
-
-        mentor.setFullName(mentorDTOIn.getFullName());
-        mentor.setEmail(mentorDTOIn.getEmail());
-        mentor.setPassword(mentorDTOIn.getPassword());
-        mentor.setJobTitle(mentorDTOIn.getJobTitle());
-        mentor.setCompany(mentorDTOIn.getCompany());
-        mentor.setSpecialization(mentorDTOIn.getSpecialization());
-        mentor.setYearsExperience(mentorDTOIn.getYearsExperience());
-        mentor.setBio(mentorDTOIn.getBio());
-        mentor.setVolunteer(mentorDTOIn.getVolunteer());
-        mentor.setSessionPrice(mentorDTOIn.getSessionPrice());
-        mentor.setAvailable(true);
-
+        applyDto(mentor, dto);
         mentor.setRating(0.0);
-        mentor.setCreatedAt(LocalDateTime.now());
-
-        mentorRepository.save(mentor);
-    }
-
-    public List<MentorDTOOut> getAllMentors() {
-
-        List<Mentor> mentors = mentorRepository.findAll();
-
-        List<MentorDTOOut> mentorDTOOuts = new ArrayList<>();
-
-        for (Mentor mentor : mentors) {
-            mentorDTOOuts.add(mapToMentorDTOOut(mentor));
-        }
-
-        return mentorDTOOuts;
-    }
-
-    public MentorDTOOut getMentorById(Integer mentorId) {
-
-        Mentor mentor = mentorRepository.findById(mentorId)
-                .orElseThrow(() -> new RuntimeException("Mentor not found"));
-
-        return mapToMentorDTOOut(mentor);
-    }
-
-    public void updateMentor(Integer mentorId, MentorDTOIn mentorDTOIn) {
-
-        Mentor mentor = mentorRepository.findById(mentorId)
-                .orElseThrow(() -> new RuntimeException("Mentor not found"));
-
-        mentor.setFullName(mentorDTOIn.getFullName());
-        mentor.setEmail(mentorDTOIn.getEmail());
-        mentor.setPassword(mentorDTOIn.getPassword());
-        mentor.setJobTitle(mentorDTOIn.getJobTitle());
-        mentor.setCompany(mentorDTOIn.getCompany());
-        mentor.setSpecialization(mentorDTOIn.getSpecialization());
-        mentor.setYearsExperience(mentorDTOIn.getYearsExperience());
-        mentor.setBio(mentorDTOIn.getBio());
-        mentor.setVolunteer(mentorDTOIn.getVolunteer());
-        mentor.setSessionPrice(mentorDTOIn.getSessionPrice());
         mentor.setAvailable(true);
-
-        mentorRepository.save(mentor);
+        mentor.setCreatedAt(LocalDateTime.now());
+        return toDtoOut(mentorRepository.save(mentor));
     }
 
-    public void deleteMentor(Integer mentorId) {
-
-        Mentor mentor = mentorRepository.findById(mentorId)
-                .orElseThrow(() -> new RuntimeException("Mentor not found"));
-
-        mentorRepository.delete(mentor);
+    public MentorDTOOut getById(Integer id) {
+        Mentor mentor = mentorRepository.findMentorById(id);
+        if (mentor == null) {
+            throw new ApiException("Mentor with id " + id + " not found");
+        }
+        return toDtoOut(mentor);
     }
 
-    private MentorDTOOut mapToMentorDTOOut(Mentor mentor) {
+    public List<MentorDTOOut> getAll() {
+        return mentorRepository.findAll().stream().map(this::toDtoOut).toList();
+    }
 
+    public MentorDTOOut update(Integer id, MentorDTOIn dto) {
+        Mentor mentor = mentorRepository.findMentorById(id);
+        if (mentor == null) {
+            throw new ApiException("Mentor with id " + id + " not found");
+        }
+        applyDto(mentor, dto);
+        return toDtoOut(mentorRepository.save(mentor));
+    }
+
+    public void delete(Integer id) {
+        Mentor mentor = mentorRepository.findMentorById(id);
+        if (mentor == null) {
+            throw new ApiException("Mentor with id " + id + " not found");
+        }
+        mentorRepository.deleteById(id);
+    }
+
+    private void applyDto(Mentor mentor, MentorDTOIn dto) {
+        mentor.setFullName(dto.getFullName());
+        mentor.setEmail(dto.getEmail());
+        mentor.setPassword(dto.getPassword());
+        mentor.setJobTitle(dto.getJobTitle());
+        mentor.setCompany(dto.getCompany());
+        mentor.setSpecialization(dto.getSpecialization());
+        mentor.setYearsExperience(dto.getYearsExperience());
+        mentor.setBio(dto.getBio());
+        mentor.setVolunteer(dto.getVolunteer());
+        mentor.setSessionPrice(dto.getSessionPrice());
+    }
+
+    private MentorDTOOut toDtoOut(Mentor mentor) {
         return new MentorDTOOut(
                 mentor.getId(),
                 mentor.getFullName(),

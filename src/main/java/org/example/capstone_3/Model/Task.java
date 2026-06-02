@@ -1,5 +1,4 @@
 package org.example.capstone_3.Model;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,15 +6,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "challenges")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class Challenge {
+@AllArgsConstructor
+public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,19 +23,19 @@ public class Challenge {
     private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String question;
+    private String description;
 
-    private String correctAnswer;
+    private LocalDateTime deadline;
 
-    private Integer points;
+    private String status;
 
-    private String difficulty;
+    private LocalDateTime createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "skill_id")
-    private Skill skill;
+    @JoinColumn(name = "learning_group_id")
+    private LearningGroup learningGroup;
 
-    @OneToMany(mappedBy = "challenge", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
     @JsonIgnore
-    private Set<ChallengeAttempt> challengeAttempts;
+    private Set<TaskSubmission> taskSubmissions;
 }

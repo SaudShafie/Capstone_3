@@ -1,21 +1,19 @@
 package org.example.capstone_3.Model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Set;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "challenges")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class Challenge {
+@AllArgsConstructor
+public class RoadmapStep {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,19 +22,21 @@ public class Challenge {
     private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String question;
+    private String description;
 
-    private String correctAnswer;
+    private Integer orderNumber;
 
-    private Integer points;
+    private Boolean completed;
 
-    private String difficulty;
+    private Integer xpReward;
+
+    private LocalDateTime completedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "roadmap_id")
+    private Roadmap roadmap;
 
     @ManyToOne
     @JoinColumn(name = "skill_id")
     private Skill skill;
-
-    @OneToMany(mappedBy = "challenge", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<ChallengeAttempt> challengeAttempts;
 }

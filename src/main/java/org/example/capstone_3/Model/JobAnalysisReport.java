@@ -9,12 +9,11 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "mock_interview_reports")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class MockInterviewReport {
+@AllArgsConstructor
+public class JobAnalysisReport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,10 +23,7 @@ public class MockInterviewReport {
     private String summary;
 
     @Column(columnDefinition = "TEXT")
-    private String strengths;
-
-    @Column(columnDefinition = "TEXT")
-    private String weaknesses;
+    private String improvements;
 
     @Column(columnDefinition = "TEXT")
     private String recommendations;
@@ -39,6 +35,6 @@ public class MockInterviewReport {
     private Student student;
 
     @OneToOne
-    @JoinColumn(name = "mock_interview_id")
-    private MockInterview mockInterview;
+    @JoinColumn(name = "job_analysis_id")
+    private JobAnalysis jobAnalysis;
 }

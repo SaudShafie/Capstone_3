@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.MentorDTOIn;
 import org.example.capstone_3.DTO.OUT.MentorDTOOut;
+import org.example.capstone_3.Model.Admin;
 import org.example.capstone_3.Model.Mentor;
+import org.example.capstone_3.Repository.AdminRepository;
 import org.example.capstone_3.Repository.MentorRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import java.util.List;
 public class MentorService {
 
     private final MentorRepository mentorRepository;
+    private final AdminRepository adminRepository;
 
     public void create(MentorDTOIn dto) {
 
@@ -30,6 +33,7 @@ public class MentorService {
 
         mentor.setRating(0.0);
         mentor.setAvailable(true);
+        mentor.setAcceptedByAdmin(false);
         mentor.setCreatedAt(LocalDateTime.now());
 
         if (Boolean.TRUE.equals(mentor.getVolunteer())) {
@@ -61,6 +65,38 @@ public class MentorService {
         }
 
         return mentorDTOOuts;
+    }
+
+    public List<MentorDTOOut> getAcceptedMentors() {
+
+        List<Mentor> mentors = mentorRepository.findMentorsByAcceptedByAdmin(true);
+
+        List<MentorDTOOut> mentorDTOOuts = new ArrayList<>();
+
+        for (Mentor mentor : mentors) {
+            mentorDTOOuts.add(toDtoOut(mentor));
+        }
+
+        return mentorDTOOuts;
+    }
+
+    public void approveMentor(Integer adminId, Integer mentorId) {
+
+        Admin admin = adminRepository.findAdminById(adminId);
+
+        if (admin == null) {
+            throw new ApiException("Admin with id " + adminId + " not found");
+        }
+
+        Mentor mentor = mentorRepository.findMentorById(mentorId);
+
+        if (mentor == null) {
+            throw new ApiException("Mentor with id " + mentorId + " not found");
+        }
+
+        mentor.setAcceptedByAdmin(true);
+
+        mentorRepository.save(mentor);
     }
 
     public void update(Integer id, MentorDTOIn dto) {
@@ -123,7 +159,8 @@ public class MentorService {
                 mentor.getVolunteer(),
                 mentor.getSessionPrice(),
                 mentor.getRating(),
-                mentor.getAvailable()
+                mentor.getAvailable(),
+                mentor.getAcceptedByAdmin()
         );
     }
 }

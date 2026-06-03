@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 public class ReviewDTOIN {
@@ -20,17 +18,4 @@ public class ReviewDTOIN {
 
     @NotBlank(message = "Review comment is required")
     private String comment;
-
-    //delete
-    @NotNull(message = "Created date and time are required")
-    private LocalDateTime createdAt;
-
-    //in path
-//    @NotNull(message = "Student id is required")
-//    @Min(value = 1, message = "Student id must be a positive number")
-//    private Integer studentId;
-//
-//    @NotNull(message = "Mentor id is required")
-//    @Min(value = 1, message = "Mentor id must be a positive number")
-//    private Integer mentorId;
 }

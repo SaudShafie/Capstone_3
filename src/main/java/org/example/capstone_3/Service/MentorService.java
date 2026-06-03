@@ -9,6 +9,7 @@ import org.example.capstone_3.Repository.MentorRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,41 +19,82 @@ public class MentorService {
     private final MentorRepository mentorRepository;
 
     public void create(MentorDTOIn dto) {
+
+        if (mentorRepository.findMentorByEmail(dto.getEmail()) != null) {
+            throw new ApiException("Email already exists");
+        }
+
         Mentor mentor = new Mentor();
+
         applyDto(mentor, dto);
+
         mentor.setRating(0.0);
         mentor.setAvailable(true);
         mentor.setCreatedAt(LocalDateTime.now());
+
+        if (Boolean.TRUE.equals(mentor.getVolunteer())) {
+            mentor.setSessionPrice(0.0);
+        }
+
         mentorRepository.save(mentor);
     }
 
     public MentorDTOOut getById(Integer id) {
+
         Mentor mentor = mentorRepository.findMentorById(id);
+
         if (mentor == null) {
             throw new ApiException("Mentor with id " + id + " not found");
         }
+
         return toDtoOut(mentor);
     }
 
     public List<MentorDTOOut> getAll() {
-        return mentorRepository.findAll().stream().map(this::toDtoOut).toList();
+
+        List<Mentor> mentors = mentorRepository.findAll();
+
+        List<MentorDTOOut> mentorDTOOuts = new ArrayList<>();
+
+        for (Mentor mentor : mentors) {
+            mentorDTOOuts.add(toDtoOut(mentor));
+        }
+
+        return mentorDTOOuts;
     }
 
     public void update(Integer id, MentorDTOIn dto) {
+
         Mentor mentor = mentorRepository.findMentorById(id);
+
         if (mentor == null) {
             throw new ApiException("Mentor with id " + id + " not found");
         }
+
+        Mentor emailOwner = mentorRepository.findMentorByEmail(dto.getEmail());
+
+        if (emailOwner != null && !emailOwner.getId().equals(id)) {
+            throw new ApiException("Email already exists");
+        }
+
         applyDto(mentor, dto);
+
+        if (Boolean.TRUE.equals(mentor.getVolunteer())) {
+            mentor.setSessionPrice(0.0);
+        }
+
         mentorRepository.save(mentor);
     }
 
     public void delete(Integer id) {
+
         Mentor mentor = mentorRepository.findMentorById(id);
+
         if (mentor == null) {
             throw new ApiException("Mentor with id " + id + " not found");
         }
-        mentorRepository.deleteById(id);
+
+        mentorRepository.delete(mentor);
     }
 
     private void applyDto(Mentor mentor, MentorDTOIn dto) {

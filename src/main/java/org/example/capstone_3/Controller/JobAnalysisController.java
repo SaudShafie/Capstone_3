@@ -25,9 +25,9 @@ public class JobAnalysisController {
         return ResponseEntity.ok(jobAnalysisService.getById(id));
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> saveJobAnalysis(@RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
-        jobAnalysisService.create(jobAnalysisDTOIn);
+    @PostMapping("/add/{studentId}")
+    public ResponseEntity<?> saveJobAnalysis(@PathVariable Integer studentId,@RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
+        jobAnalysisService.create(studentId,jobAnalysisDTOIn);
         return ResponseEntity.ok().body(new ApiResponse("Job analysis has been saved successfully"));
     }
 

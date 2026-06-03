@@ -7,56 +7,150 @@ import org.example.capstone_3.DTO.OUT.SkillDTOOut;
 import org.example.capstone_3.DTO.OUT.StudentDTOOut;
 import org.example.capstone_3.Model.Skill;
 import org.example.capstone_3.Model.Student;
+import org.example.capstone_3.Repository.SkillRepository;
 import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final SkillRepository skillRepository;
 
     public void create(StudentDTOIn dto) {
+
+        if (studentRepository.findStudentByEmail(dto.getEmail()) != null) {
+            throw new ApiException("Email already exists");
+        }
+
         Student student = new Student();
+
         applyDto(student, dto);
+
         student.setXp(0);
         student.setReadinessScore(0);
         student.setCreatedAt(LocalDateTime.now());
+        student.setSkills(null);
+
         studentRepository.save(student);
     }
 
     public StudentDTOOut getById(Integer id) {
+
         Student student = studentRepository.findStudentById(id);
+
         if (student == null) {
             throw new ApiException("Student with id " + id + " not found");
         }
+
         return toDtoOut(student);
     }
 
     public List<StudentDTOOut> getAll() {
-        return studentRepository.findAll().stream().map(this::toDtoOut).toList();
+
+        List<Student> students = studentRepository.findAll();
+
+        List<StudentDTOOut> studentDTOOuts = new ArrayList<>();
+
+        for (Student student : students) {
+            studentDTOOuts.add(toDtoOut(student));
+        }
+
+        return studentDTOOuts;
     }
 
     public void update(Integer id, StudentDTOIn dto) {
+
         Student student = studentRepository.findStudentById(id);
+
         if (student == null) {
             throw new ApiException("Student with id " + id + " not found");
         }
+
+        Student emailOwner = studentRepository.findStudentByEmail(dto.getEmail());
+
+        if (emailOwner != null && !emailOwner.getId().equals(id)) {
+            throw new ApiException("Email already exists");
+        }
+
         applyDto(student, dto);
+
         studentRepository.save(student);
     }
 
     public void delete(Integer id) {
+
         Student student = studentRepository.findStudentById(id);
+
         if (student == null) {
             throw new ApiException("Student with id " + id + " not found");
         }
-        studentRepository.deleteById(id);
+
+        studentRepository.delete(student);
+    }
+
+    public void addSkillToStudent(Integer studentId, Integer skillId) {
+
+        Student student = studentRepository.findStudentById(studentId);
+
+        if (student == null) {
+            throw new ApiException("Student with id " + studentId + " not found");
+        }
+
+        Skill skill = skillRepository.findSkillById(skillId);
+
+        if (skill == null) {
+            throw new ApiException("Skill with id " + skillId + " not found");
+        }
+
+        if (student.getSkills() == null) {
+            student.setSkills(new HashSet<>());
+        }
+
+        for (Skill existingSkill : student.getSkills()) {
+            if (existingSkill.getId().equals(skillId)) {
+                throw new ApiException("Student already has this skill");
+            }
+        }
+
+        student.getSkills().add(skill);
+        studentRepository.save(student);
+    }
+
+    public void removeSkillFromStudent(Integer studentId, Integer skillId) {
+
+        Student student = studentRepository.findStudentById(studentId);
+
+        if (student == null) {
+            throw new ApiException("Student with id " + studentId + " not found");
+        }
+
+        Skill skill = skillRepository.findSkillById(skillId);
+
+        if (skill == null) {
+            throw new ApiException("Skill with id " + skillId + " not found");
+        }
+
+        if (student.getSkills() == null || student.getSkills().isEmpty()) {
+            throw new ApiException("Student does not have any skills");
+        }
+
+        boolean removed = student.getSkills().removeIf(existingSkill ->
+                existingSkill.getId().equals(skillId)
+        );
+
+        if (!removed) {
+            throw new ApiException("Student does not have this skill");
+        }
+
+        studentRepository.save(student);
     }
 
     private void applyDto(Student student, StudentDTOIn dto) {
@@ -84,16 +178,28 @@ public class StudentService {
                 student.getCvText(),
                 student.getXp(),
                 student.getReadinessScore(),
-                toSkillDtos(student.getSkills())
+                mapSkills(student.getSkills())
         );
     }
 
-    private Set<SkillDTOOut> toSkillDtos(Set<Skill> skills) {
+    private Set<SkillDTOOut> mapSkills(Set<Skill> skills) {
+
+        Set<SkillDTOOut> skillDTOOuts = new HashSet<>();
+
         if (skills == null) {
-            return null;
+            return skillDTOOuts;
         }
-        return skills.stream()
-                .map(skill -> new SkillDTOOut(skill.getId(), skill.getName(), skill.getCategory()))
-                .collect(Collectors.toSet());
+
+        for (Skill skill : skills) {
+            SkillDTOOut skillDTOOut = new SkillDTOOut(
+                    skill.getId(),
+                    skill.getName(),
+                    skill.getCategory()
+            );
+
+            skillDTOOuts.add(skillDTOOut);
+        }
+
+        return skillDTOOuts;
     }
 }

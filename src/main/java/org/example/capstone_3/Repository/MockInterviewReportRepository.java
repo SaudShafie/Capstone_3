@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface MockInterviewReportRepository extends JpaRepository<MockInterviewReport, Integer> {
 
     MockInterviewReport findMockInterviewReportById(Integer id);
+
+    MockInterviewReport findMockInterviewReportByMockInterviewId(Integer mockInterviewId);
 }

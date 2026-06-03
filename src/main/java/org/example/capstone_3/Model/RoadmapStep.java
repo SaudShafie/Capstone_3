@@ -19,17 +19,22 @@ public class RoadmapStep {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(columnDefinition = "varchar(80) not null")
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(columnDefinition = "int not null")
     private Integer orderNumber;
 
+    @Column(columnDefinition = "boolean default false")
     private Boolean completed;
 
+    @Column(columnDefinition = "int not null")
     private Integer xpReward;
 
+    @Column(columnDefinition = "datetime not null")
     private LocalDateTime completedAt;
 
     @ManyToOne

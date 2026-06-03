@@ -32,6 +32,7 @@ public class MockInterviewReport {
     @Column(columnDefinition = "TEXT")
     private String recommendations;
 
+    @Column(columnDefinition = "datetime not null")
     private LocalDateTime generatedAt;
 
     @ManyToOne

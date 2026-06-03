@@ -20,12 +20,16 @@ public class ChallengeAttempt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(columnDefinition = "TEXT")
     private String submittedAnswer;
 
+    @Column(columnDefinition = "boolean default false")
     private Boolean correct;
 
+    @Column(columnDefinition = "int not null")
     private Integer earnedPoints;
 
+    @Column(columnDefinition = "datetime not null")
     private LocalDateTime submittedAt;
 
     @ManyToOne

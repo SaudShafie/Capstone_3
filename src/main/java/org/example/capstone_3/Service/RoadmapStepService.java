@@ -33,23 +33,16 @@ public class RoadmapStepService {
     }
 
     public RoadmapStepDTOOUT getRoadmapStepById(Integer id){
-        RoadmapStep roadmapStep = roadmapStepRepository.findRoadmapStepById(id);
-        if(roadmapStep == null){
-            throw new ApiException("Roadmap Step not found");
-        }
+        RoadmapStep roadmapStep = findRoadmapStep(id);
+
         return convertToDTO(roadmapStep);
     }
 
     public void addRoadmapStep(Integer roadmap_id, RoadmapStepDTOIN dto) {
-        Roadmap roadmap = roadmapRepository.findRoadmapById(roadmap_id);
-        if(roadmap == null){
-            throw new ApiException("Roadmap not found");
-        }
+        Roadmap roadmap = findRoadmap(roadmap_id);
 
-        Skill skill = skillRepository.findSkillById(dto.getSkillId());
-        if(skill == null){
-            throw new ApiException("Skill not exist");
-        }
+        Skill skill = findSkill(dto.getSkillId());
+
         RoadmapStep roadmapStep = new RoadmapStep();
 
         roadmapStep.setTitle(dto.getTitle());
@@ -81,14 +74,10 @@ public class RoadmapStepService {
     }
 
     public void updateRoadmapStep(Integer id, RoadmapStepDTOIN dto){
-        RoadmapStep roadmapStep = roadmapStepRepository.findRoadmapStepById(id);
-        if(roadmapStep == null){
-            throw new ApiException("Roadmap Step not found");
-        }
-        Skill skill = skillRepository.findSkillById(dto.getSkillId());
-        if(skill == null){
-            throw new ApiException("Skill not exist");
-        }
+        RoadmapStep roadmapStep = findRoadmapStep(id);
+
+        Skill skill = findSkill(dto.getSkillId());
+
         roadmapStep.setTitle(dto.getTitle());
         roadmapStep.setDescription(dto.getDescription());
         roadmapStep.setOrderNumber(dto.getOrderNumber());
@@ -98,11 +87,95 @@ public class RoadmapStepService {
     }
 
     public void deleteRoadmapStep(Integer id){
-        RoadmapStep roadmapStep = roadmapStepRepository.findRoadmapStepById(id);
-        if(roadmapStep == null){
-            throw new ApiException("Roadmap Step not found");
-        }
+        RoadmapStep roadmapStep = findRoadmapStep(id);
+
         roadmapStepRepository.delete(roadmapStep);
+    }
+
+    public void completeStep(Integer student_id, Integer roadmap_id, Integer step_id) {
+        Roadmap roadmap = findRoadmap(roadmap_id);
+
+        if (!roadmap.getStudent().getId().equals(student_id)) {
+            throw new ApiException("Roadmap does not belong to this student");
+        }
+
+        RoadmapStep step = findRoadmapStep(step_id);
+
+        if (!step.getRoadmap().getId().equals(roadmap_id)) {
+            throw new ApiException("Step does not belong to this roadmap");
+        }
+
+        if (step.getCompleted()) {
+            throw new ApiException("Step already completed");
+        }
+
+        if (step.getOrderNumber() > 1) {
+            RoadmapStep previousStep = roadmapStepRepository.findByRoadmapIdAndOrderNumber(roadmap_id, step.getOrderNumber() - 1);
+            if (previousStep != null && !previousStep.getCompleted()) {
+                throw new ApiException("You must complete step " + previousStep.getId() + ": "+ previousStep.getTitle() + " first");
+            }
+        }
+
+        step.setCompleted(true);
+        step.setCompletedAt(LocalDateTime.now());
+        roadmapStepRepository.save(step);
+
+        Roadmap updatedRoadmap = findRoadmap(roadmap_id);
+        updateProgress(updatedRoadmap);
+    }
+
+    private void updateProgress(Roadmap roadmap) {
+        int completedCount = 0;
+        for (RoadmapStep s : roadmap.getRoadmapSteps()) {
+            if (s.getCompleted()) {
+                completedCount++;
+            }
+        }
+        int progress = (int) ((double) completedCount / roadmap.getRoadmapSteps().size() * 100);
+
+        roadmap.setProgressPercentage(progress);
+        roadmapRepository.save(roadmap);
+    }
+
+    public RoadmapStepDTOOUT getNextStep(Integer student_id, Integer roadmap_id) {
+        Roadmap roadmap = findRoadmap(roadmap_id);
+
+        if (!roadmap.getStudent().getId().equals(student_id)) {
+            throw new ApiException("Roadmap does not belong to this student");
+        }
+
+        List<RoadmapStep> allSteps = roadmapStepRepository.findByRoadmapIdOrderByOrderNumber(roadmap_id);
+        for (RoadmapStep step : allSteps) {
+            if (!step.getCompleted()) {
+                return convertToDTO(step);
+            }
+        }
+
+        throw new ApiException("All steps are completed");
+    }
+
+    private Roadmap findRoadmap(Integer roadmap_id) {
+        Roadmap roadmap = roadmapRepository.findRoadmapById(roadmap_id);
+        if (roadmap == null) {
+            throw new ApiException("Roadmap not found");
+        }
+        return roadmap;
+    }
+
+    private RoadmapStep findRoadmapStep(Integer step_id) {
+        RoadmapStep step = roadmapStepRepository.findRoadmapStepById(step_id);
+        if (step == null) {
+            throw new ApiException("Roadmap step not found");
+        }
+        return step;
+    }
+
+    private Skill findSkill(Integer skill_id) {
+        Skill skill = skillRepository.findSkillById(skill_id);
+        if (skill == null) {
+            throw new ApiException("Skill not found");
+        }
+        return skill;
     }
 
     public RoadmapStepDTOOUT convertToDTO(RoadmapStep roadmapStep) {

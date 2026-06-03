@@ -16,7 +16,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Check(constraints = "status='EASY' or status='MEDIUM' status='HARD'")
+@Check(constraints = "difficulty='EASY' or difficulty='MEDIUM' or difficulty='HARD'")
 public class Challenge {
 
     @Id

@@ -26,9 +26,6 @@ public class ChallengeAttempt {
     @Column(columnDefinition = "boolean default false")
     private Boolean correct;
 
-    @Column(columnDefinition = "int not null")
-    private Integer earnedPoints;
-
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime submittedAt;
 

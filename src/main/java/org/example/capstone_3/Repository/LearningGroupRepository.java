@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LearningGroupRepository extends JpaRepository<LearningGroup,Integer> {
     LearningGroup findLearningGroupById(Integer id);
+
+    LearningGroup findLearningGroupByCode(String code);
 }

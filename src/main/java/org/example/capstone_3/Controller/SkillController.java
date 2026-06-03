@@ -25,21 +25,21 @@ public class SkillController {
         return ResponseEntity.ok(skillService.getById(id));
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> saveSkill(@RequestBody @Valid SkillDTOIn skillDTOIn) {
-        skillService.create(skillDTOIn);
+    @PostMapping("/add/{adminId}")
+    public ResponseEntity<?> saveSkill(@PathVariable Integer adminId, @RequestBody @Valid SkillDTOIn skillDTOIn) {
+        skillService.create(adminId, skillDTOIn);
         return ResponseEntity.ok().body(new ApiResponse("Skill has been saved successfully"));
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateSkill(@PathVariable Integer id, @RequestBody @Valid SkillDTOIn skillDTOIn) {
-        skillService.update(id, skillDTOIn);
+    @PutMapping("/update/{adminId}/{skillId}")
+    public ResponseEntity<?> updateSkill(@PathVariable Integer adminId, @PathVariable Integer skillId, @RequestBody @Valid SkillDTOIn skillDTOIn) {
+        skillService.update(adminId, skillId, skillDTOIn);
         return ResponseEntity.ok().body(new ApiResponse("Skill has been updated successfully"));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteSkill(@PathVariable Integer id) {
-        skillService.delete(id);
+    @DeleteMapping("/delete/{adminId}/{skillId}")
+    public ResponseEntity<?> deleteSkill(@PathVariable Integer adminId, @PathVariable Integer skillId) {
+        skillService.delete(adminId, skillId);
         return ResponseEntity.ok().body(new ApiResponse("Skill has been deleted successfully"));
     }
 }

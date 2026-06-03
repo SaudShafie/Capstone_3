@@ -9,6 +9,7 @@ import org.example.capstone_3.Repository.AdminRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,40 +18,72 @@ public class AdminService {
 
     private final AdminRepository adminRepository;
 
-    public AdminDTOOut create(AdminDTOIn dto) {
+    public void create(AdminDTOIn dto) {
+
+        if (adminRepository.findAdminByEmail(dto.getEmail()) != null) {
+            throw new ApiException("Email already exists");
+        }
+
         Admin admin = new Admin();
+
         applyDto(admin, dto);
         admin.setCreatedAt(LocalDateTime.now());
-        return toDtoOut(adminRepository.save(admin));
+
+        adminRepository.save(admin);
     }
 
     public AdminDTOOut getById(Integer id) {
+
         Admin admin = adminRepository.findAdminById(id);
+
         if (admin == null) {
             throw new ApiException("Admin with id " + id + " not found");
         }
+
         return toDtoOut(admin);
     }
 
     public List<AdminDTOOut> getAll() {
-        return adminRepository.findAll().stream().map(this::toDtoOut).toList();
+
+        List<Admin> admins = adminRepository.findAll();
+
+        List<AdminDTOOut> adminDTOOuts = new ArrayList<>();
+
+        for (Admin admin : admins) {
+            adminDTOOuts.add(toDtoOut(admin));
+        }
+
+        return adminDTOOuts;
     }
 
-    public AdminDTOOut update(Integer id, AdminDTOIn dto) {
+    public void update(Integer id, AdminDTOIn dto) {
+
         Admin admin = adminRepository.findAdminById(id);
+
         if (admin == null) {
             throw new ApiException("Admin with id " + id + " not found");
         }
+
+        Admin emailOwner = adminRepository.findAdminByEmail(dto.getEmail());
+
+        if (emailOwner != null && !emailOwner.getId().equals(id)) {
+            throw new ApiException("Email already exists");
+        }
+
         applyDto(admin, dto);
-        return toDtoOut(adminRepository.save(admin));
+
+        adminRepository.save(admin);
     }
 
     public void delete(Integer id) {
+
         Admin admin = adminRepository.findAdminById(id);
+
         if (admin == null) {
             throw new ApiException("Admin with id " + id + " not found");
         }
-        adminRepository.deleteById(id);
+
+        adminRepository.delete(admin);
     }
 
     private void applyDto(Admin admin, AdminDTOIn dto) {

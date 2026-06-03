@@ -5,11 +5,17 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class AdminDTOOut {
+public class StudentSummaryDTOOut {
 
     private Integer id;
 
     private String fullName;
 
     private String email;
+
+    private String major;
+
+    private String targetRole;
+
+    private Integer readinessScore;
 }

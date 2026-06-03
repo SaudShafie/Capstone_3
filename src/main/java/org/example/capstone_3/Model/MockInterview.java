@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Check(constraints = "status='PENDING' or status='SCHEDULE' status='COMPLETE' or status='REJECT' or status='CANCEL'")
+@Check(constraints = "status='PENDING' or status='SCHEDULE' or status='COMPLETE' or status='REJECT' or status='CANCEL'")
 public class MockInterview {
 
     @Id

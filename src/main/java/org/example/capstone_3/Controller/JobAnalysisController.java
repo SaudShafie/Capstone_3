@@ -27,13 +27,13 @@ public class JobAnalysisController {
 
     @PostMapping("/add/{studentId}")
     public ResponseEntity<?> saveJobAnalysis(@PathVariable Integer studentId,@RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
-        jobAnalysisService.create(studentId,jobAnalysisDTOIn);
+        jobAnalysisService.addJobAnalysis(studentId, jobAnalysisDTOIn);
         return ResponseEntity.ok().body(new ApiResponse("Job analysis has been saved successfully"));
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateJobAnalysis(@PathVariable Integer id, @RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
-        jobAnalysisService.update(id, jobAnalysisDTOIn);
+        jobAnalysisService.updateJobAnalysis(id, jobAnalysisDTOIn);
         return ResponseEntity.ok().body(new ApiResponse("Job analysis has been updated successfully"));
     }
 

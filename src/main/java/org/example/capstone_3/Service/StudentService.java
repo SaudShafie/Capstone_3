@@ -45,7 +45,7 @@ public class StudentService {
         applyDto(student, dto);
         student.setXp(0);
         student.setCreatedAt(LocalDateTime.now());
-        student.setSkills(null);
+        student.setSkills(new HashSet<>());
         student.setReadinessScore(fetchReadinessScoreFromAi(dto));
 
         studentRepository.save(student);
@@ -117,15 +117,12 @@ public class StudentService {
     }
 
     public void addSkillToStudent(Integer studentId, Integer skillId) {
-
         Student student = studentRepository.findStudentById(studentId);
-
         if (student == null) {
             throw new ApiException("Student with id " + studentId + " not found");
         }
 
         Skill skill = skillRepository.findSkillById(skillId);
-
         if (skill == null) {
             throw new ApiException("Skill with id " + skillId + " not found");
         }
@@ -134,10 +131,10 @@ public class StudentService {
             student.setSkills(new HashSet<>());
         }
 
-        for (Skill existingSkill : student.getSkills()) {
-            if (existingSkill.getId().equals(skillId)) {
-                throw new ApiException("Student already has this skill");
-            }
+        boolean alreadyHasSkill = student.getSkills().stream()
+                .anyMatch(existing -> existing.getId().equals(skillId));
+        if (alreadyHasSkill) {
+            throw new ApiException("Student already has this skill");
         }
 
         student.getSkills().add(skill);
@@ -145,27 +142,16 @@ public class StudentService {
     }
 
     public void removeSkillFromStudent(Integer studentId, Integer skillId) {
-
         Student student = studentRepository.findStudentById(studentId);
-
         if (student == null) {
             throw new ApiException("Student with id " + studentId + " not found");
-        }
-
-        Skill skill = skillRepository.findSkillById(skillId);
-
-        if (skill == null) {
-            throw new ApiException("Skill with id " + skillId + " not found");
         }
 
         if (student.getSkills() == null || student.getSkills().isEmpty()) {
             throw new ApiException("Student does not have any skills");
         }
 
-        boolean removed = student.getSkills().removeIf(existingSkill ->
-                existingSkill.getId().equals(skillId)
-        );
-
+        boolean removed = student.getSkills().removeIf(skill -> skill.getId().equals(skillId));
         if (!removed) {
             throw new ApiException("Student does not have this skill");
         }

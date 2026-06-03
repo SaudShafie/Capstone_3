@@ -30,11 +30,14 @@ public class Review {
     private LocalDateTime createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "student_id")
+    @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
     @ManyToOne
-    @JoinColumn(name = "mentor_id")
+    @JoinColumn(name = "mentor_id", nullable = false)
     private Mentor mentor;
 
+    @OneToOne
+    @JoinColumn(name = "mock_interview_id", nullable = false, unique = true)
+    private MockInterview mockInterview;
 }

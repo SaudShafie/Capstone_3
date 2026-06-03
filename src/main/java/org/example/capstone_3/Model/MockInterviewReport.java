@@ -36,10 +36,10 @@ public class MockInterviewReport {
     private LocalDateTime generatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "student_id")
+    @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
     @OneToOne
-    @JoinColumn(name = "mock_interview_id")
+    @JoinColumn(name = "mock_interview_id", nullable = false, unique = true)
     private MockInterview mockInterview;
 }

@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoadmapDTOIN {
-    @NotEmpty(message = "Title is required")
-    private String title;
 
     @NotEmpty(message = "Target role is required")
     private String targetRole;

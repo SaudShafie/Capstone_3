@@ -57,6 +57,9 @@ public class Mentor {
     @Column(columnDefinition = "boolean not null")
     private Boolean available;
 
+    @Column(columnDefinition = "boolean not null")
+    private Boolean acceptedByAdmin;
+
     @Column(updatable = false, columnDefinition = "datetime not null")
     private LocalDateTime createdAt;
 

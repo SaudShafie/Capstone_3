@@ -60,10 +60,10 @@ public class LearningGroupService {
         learningGroup.setDescription(dto.getDescription());
         learningGroup.setCreatedAt(LocalDateTime.now());
 
-        learningGroup.getStudents().add(student);
+        learningGroupRepository.save(learningGroup);
+
         student.getLearningGroups().add(learningGroup);
 
-        learningGroupRepository.save(learningGroup);
         studentRepository.save(student);
     }
 

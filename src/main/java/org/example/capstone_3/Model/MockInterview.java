@@ -26,6 +26,9 @@ public class MockInterview {
     @Column(columnDefinition = "varchar(80) not null")
     private String interviewType;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime scheduledAt;
 
@@ -41,6 +44,9 @@ public class MockInterview {
     @Column(columnDefinition = "TEXT")
     private String feedback;
 
+    @Column(columnDefinition = "int")
+    private Integer score;
+
     @Column(columnDefinition = "TEXT")
     private String url;
 
@@ -54,6 +60,10 @@ public class MockInterview {
     @ManyToOne
     @JoinColumn(name = "mentor_id")
     private Mentor mentor;
+
+    @ManyToOne
+    @JoinColumn(name = "job_analysis_id")
+    private JobAnalysis jobAnalysis;
 
     @OneToOne(mappedBy = "mockInterview", cascade = CascadeType.ALL)
     @JsonIgnore

@@ -1,9 +1,7 @@
 package org.example.capstone_3.Controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiResponse;
-import org.example.capstone_3.DTO.IN.MockInterviewReportDTOIN;
 import org.example.capstone_3.Service.MockInterviewReportService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,16 +23,16 @@ public class MockInterviewReportController {
         return ResponseEntity.ok(mockInterviewReportService.getById(id));
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> saveMockInterviewReport(@RequestBody @Valid MockInterviewReportDTOIN mockInterviewReportDTOIN) {
-        mockInterviewReportService.create(mockInterviewReportDTOIN);
-        return ResponseEntity.ok().body(new ApiResponse("Mock interview report has been saved successfully"));
+    @PostMapping("/add/{mockInterviewId}")
+    public ResponseEntity<?> saveMockInterviewReport(@PathVariable Integer mockInterviewId) {
+        mockInterviewReportService.create(mockInterviewId);
+        return ResponseEntity.ok().body(new ApiResponse("Mock interview report has been generated successfully"));
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateMockInterviewReport(@PathVariable Integer id, @RequestBody @Valid MockInterviewReportDTOIN mockInterviewReportDTOIN) {
-        mockInterviewReportService.update(id, mockInterviewReportDTOIN);
-        return ResponseEntity.ok().body(new ApiResponse("Mock interview report has been updated successfully"));
+    public ResponseEntity<?> updateMockInterviewReport(@PathVariable Integer id) {
+        mockInterviewReportService.update(id);
+        return ResponseEntity.ok().body(new ApiResponse("Mock interview report has been regenerated successfully"));
     }
 
     @DeleteMapping("/delete/{id}")

@@ -22,10 +22,13 @@ public class TaskSubmission {
     @Column(columnDefinition = "TEXT")
     private String answerText;
 
-    private String status;
+    @Column(columnDefinition = "boolean default false")
+    private Boolean completed;
 
+    @Column(columnDefinition = "int not null")
     private Integer score;
 
+    @Column(columnDefinition = "datetime not null")
     private LocalDateTime submittedAt;
 
     @Column(columnDefinition = "TEXT")

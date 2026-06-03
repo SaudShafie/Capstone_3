@@ -3,6 +3,7 @@ package org.example.capstone_3.DTO.IN;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,11 @@ public class RoadmapStepDTOIN {
     @NotNull(message = "Order number is required")
     @Min(value = 1, message = "Order number must be 1 or more")
     private Integer orderNumber;
+
+    @NotNull(message = "XP reward is required")
+    @Positive
+    private Integer xpReward;
+
 
     @NotNull(message = "Skill id is required")
     @Min(value = 1, message = "Skill id must be a positive number")

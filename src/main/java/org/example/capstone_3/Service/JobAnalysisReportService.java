@@ -2,6 +2,7 @@ package org.example.capstone_3.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
+import org.example.capstone_3.DTO.IN.JobAnalysisReportDTOIn;
 import org.example.capstone_3.DTO.OUT.JobAnalysisReportDTOOut;
 import org.example.capstone_3.DTO.OUT.JobAnalysisSummaryDTOOut;
 import org.example.capstone_3.DTO.OUT.StudentSummaryDTOOut;

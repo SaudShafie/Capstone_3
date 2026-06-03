@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Check;
 
 import java.time.LocalDateTime;
 
@@ -15,16 +16,20 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Check(constraints = "status='PENDING' or status='SCHEDULE' status='COMPLETE' or status='REJECT' or status='CANCEL'")
 public class MockInterview {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(columnDefinition = "varchar(80) not null")
     private String interviewType;
 
+    @Column(columnDefinition = "datetime not null")
     private LocalDateTime scheduledAt;
 
+    @Column(columnDefinition = "varchar(80) not null")
     private String status;
 
     @Column(columnDefinition = "TEXT")
@@ -36,10 +41,10 @@ public class MockInterview {
     @Column(columnDefinition = "TEXT")
     private String feedback;
 
-    private Integer score;
-
+    @Column(columnDefinition = "TEXT")
     private String url;
 
+    @Column(columnDefinition = "datetime not null")
     private LocalDateTime createdAt;
 
     @ManyToOne
@@ -49,10 +54,6 @@ public class MockInterview {
     @ManyToOne
     @JoinColumn(name = "mentor_id")
     private Mentor mentor;
-
-    @ManyToOne
-    @JoinColumn(name = "job_analysis_id")
-    private JobAnalysis jobAnalysis;
 
     @OneToOne(mappedBy = "mockInterview", cascade = CascadeType.ALL)
     @JsonIgnore

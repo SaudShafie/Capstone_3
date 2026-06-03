@@ -57,7 +57,7 @@ public class TaskService {
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
         task.setDeadline(dto.getDeadline());
-        task.setStatus("START");
+        task.setStatus("OPEN");
         task.setCreatedAt(LocalDateTime.now());
 
         task.setLearningGroup(learningGroup);

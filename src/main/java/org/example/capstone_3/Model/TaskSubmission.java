@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Check(constraints = "status='SUBMITTED' or status='NOT SUBMITTED' or status='EVALUATED")
+@Check(constraints = "status='SUBMITTED' or status='NOT SUBMITTED' or status='EVALUATED'")
 public class TaskSubmission {
 
     @Id

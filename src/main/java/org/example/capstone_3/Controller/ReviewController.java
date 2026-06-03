@@ -25,14 +25,23 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getById(id));
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> saveReview(@RequestBody @Valid ReviewDTOIN reviewDTOIN) {
-        reviewService.create(reviewDTOIN);
+    @GetMapping("/mentor/{mentorId}")
+    public ResponseEntity<?> getReviewsByMentorId(@PathVariable Integer mentorId) {
+        return ResponseEntity.ok(reviewService.getReviewsByMentorId(mentorId));
+    }
+
+    @PostMapping("/add/{studentId}/{mentorId}/{mockInterviewId}")
+    public ResponseEntity<?> saveReview(@PathVariable Integer studentId,
+                                        @PathVariable Integer mentorId,
+                                        @PathVariable Integer mockInterviewId,
+                                        @RequestBody @Valid ReviewDTOIN reviewDTOIN) {
+        reviewService.create(studentId, mentorId, mockInterviewId, reviewDTOIN);
         return ResponseEntity.ok().body(new ApiResponse("Review has been saved successfully"));
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateReview(@PathVariable Integer id, @RequestBody @Valid ReviewDTOIN reviewDTOIN) {
+    public ResponseEntity<?> updateReview(@PathVariable Integer id,
+                                          @RequestBody @Valid ReviewDTOIN reviewDTOIN) {
         reviewService.update(id, reviewDTOIN);
         return ResponseEntity.ok().body(new ApiResponse("Review has been updated successfully"));
     }

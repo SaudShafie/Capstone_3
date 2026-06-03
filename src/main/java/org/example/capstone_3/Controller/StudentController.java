@@ -27,13 +27,13 @@ public class StudentController {
 
     @PostMapping("/add")
     public ResponseEntity<?> saveStudent(@RequestBody @Valid StudentDTOIn studentDTOIn) {
-        studentService.create(studentDTOIn);
+        studentService.addStudent(studentDTOIn);
         return ResponseEntity.ok().body(new ApiResponse("Student has been saved successfully"));
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateStudent(@PathVariable Integer id, @RequestBody @Valid StudentDTOIn studentDTOIn) {
-        studentService.update(id, studentDTOIn);
+        studentService.updateStudent(id, studentDTOIn);
         return ResponseEntity.ok().body(new ApiResponse("Student has been updated successfully"));
     }
 

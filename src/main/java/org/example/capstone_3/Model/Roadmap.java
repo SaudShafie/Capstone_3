@@ -33,10 +33,7 @@ public class Roadmap {
     private LocalDateTime createdAt;
 
     @Column(columnDefinition = "TEXT")
-    private String skillGapSummary;
-
-    @Column(columnDefinition = "TEXT")
-    private String recommendations;
+    private String skillGapSummary; // target role and student skills based
 
     @ManyToOne
     @JoinColumn(name = "student_id")

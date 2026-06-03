@@ -34,4 +34,3 @@ build/
 
 ### Local secrets & API keys ###
 **/application-local.properties
-

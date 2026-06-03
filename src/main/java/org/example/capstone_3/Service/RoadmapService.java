@@ -104,7 +104,7 @@ public class RoadmapService {
                 roadmap.getProgressPercentage(),
                 roadmap.getCreatedAt(),
                 roadmap.getStudent() != null ? roadmap.getStudent().getId() : null,
-                roadmap.getJobAnalysis() != null ? roadmap.getJobAnalysis().getId() : null,
+                null,
                 steps
         );
     }

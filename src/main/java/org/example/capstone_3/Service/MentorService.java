@@ -17,13 +17,13 @@ public class MentorService {
 
     private final MentorRepository mentorRepository;
 
-    public MentorDTOOut create(MentorDTOIn dto) {
+    public void create(MentorDTOIn dto) {
         Mentor mentor = new Mentor();
         applyDto(mentor, dto);
         mentor.setRating(0.0);
         mentor.setAvailable(true);
         mentor.setCreatedAt(LocalDateTime.now());
-        return toDtoOut(mentorRepository.save(mentor));
+        mentorRepository.save(mentor);
     }
 
     public MentorDTOOut getById(Integer id) {
@@ -38,13 +38,13 @@ public class MentorService {
         return mentorRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    public MentorDTOOut update(Integer id, MentorDTOIn dto) {
+    public void update(Integer id, MentorDTOIn dto) {
         Mentor mentor = mentorRepository.findMentorById(id);
         if (mentor == null) {
             throw new ApiException("Mentor with id " + id + " not found");
         }
         applyDto(mentor, dto);
-        return toDtoOut(mentorRepository.save(mentor));
+        mentorRepository.save(mentor);
     }
 
     public void delete(Integer id) {
@@ -81,8 +81,7 @@ public class MentorService {
                 mentor.getVolunteer(),
                 mentor.getSessionPrice(),
                 mentor.getRating(),
-                mentor.getAvailable(),
-                mentor.getCreatedAt()
+                mentor.getAvailable()
         );
     }
 }

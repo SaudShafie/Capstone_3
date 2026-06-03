@@ -19,10 +19,10 @@ public class ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final SkillRepository skillRepository;
 
-    public ChallengeDTOOUT create(ChallengeDTOIN dto) {
+    public void create(ChallengeDTOIN dto) {
         Challenge challenge = new Challenge();
         applyDto(challenge, dto);
-        return toDtoOut(challengeRepository.save(challenge));
+    challengeRepository.save(challenge);
     }
 
     public ChallengeDTOOUT getById(Integer id) {
@@ -37,13 +37,13 @@ public class ChallengeService {
         return challengeRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    public ChallengeDTOOUT update(Integer id, ChallengeDTOIN dto) {
+    public void update(Integer id, ChallengeDTOIN dto) {
         Challenge challenge = challengeRepository.findChallengeById(id);
         if (challenge == null) {
             throw new ApiException("Challenge with id " + id + " not found");
         }
         applyDto(challenge, dto);
-        return toDtoOut(challengeRepository.save(challenge));
+        challengeRepository.save(challenge);
     }
 
     public void delete(Integer id) {

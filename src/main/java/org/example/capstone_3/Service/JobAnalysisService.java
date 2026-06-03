@@ -4,27 +4,31 @@ import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.JobAnalysisDTOIn;
 import org.example.capstone_3.DTO.OUT.JobAnalysisDTOOut;
+import org.example.capstone_3.DTO.OUT.SkillDTOOut;
+import org.example.capstone_3.DTO.OUT.StudentSummaryDTOOut;
 import org.example.capstone_3.Model.JobAnalysis;
+import org.example.capstone_3.Model.Skill;
 import org.example.capstone_3.Model.Student;
 import org.example.capstone_3.Repository.JobAnalysisRepository;
-import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class JobAnalysisService {
 
     private final JobAnalysisRepository jobAnalysisRepository;
-    private final StudentRepository studentRepository;
 
-    public JobAnalysisDTOOut create(JobAnalysisDTOIn dto) {
+    public void create(JobAnalysisDTOIn dto) {
         JobAnalysis jobAnalysis = new JobAnalysis();
         applyDto(jobAnalysis, dto);
+        jobAnalysis.setMatchScore(0);
         jobAnalysis.setCreatedAt(LocalDateTime.now());
-        return toDtoOut(jobAnalysisRepository.save(jobAnalysis));
+        jobAnalysisRepository.save(jobAnalysis);
     }
 
     public JobAnalysisDTOOut getById(Integer id) {
@@ -39,13 +43,13 @@ public class JobAnalysisService {
         return jobAnalysisRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    public JobAnalysisDTOOut update(Integer id, JobAnalysisDTOIn dto) {
+    public void update(Integer id, JobAnalysisDTOIn dto) {
         JobAnalysis jobAnalysis = jobAnalysisRepository.findJobAnalysisById(id);
         if (jobAnalysis == null) {
             throw new ApiException("Job analysis with id " + id + " not found");
         }
         applyDto(jobAnalysis, dto);
-        return toDtoOut(jobAnalysisRepository.save(jobAnalysis));
+        jobAnalysisRepository.save(jobAnalysis);
     }
 
     public void delete(Integer id) {
@@ -57,26 +61,10 @@ public class JobAnalysisService {
     }
 
     private void applyDto(JobAnalysis jobAnalysis, JobAnalysisDTOIn dto) {
-        jobAnalysis.setJobTitle(dto.getJobTitle());
         jobAnalysis.setJobDescription(dto.getJobDescription());
-        jobAnalysis.setRequiredSkillsText(dto.getRequiredSkillsText());
-        jobAnalysis.setStudent(findStudent(dto.getStudentId()));
-    }
-
-    private Student findStudent(Integer studentId) {
-        if (studentId == null) {
-            return null;
-        }
-        Student student = studentRepository.findStudentById(studentId);
-        if (student == null) {
-            throw new ApiException("Student with id " + studentId + " not found");
-        }
-        return student;
     }
 
     private JobAnalysisDTOOut toDtoOut(JobAnalysis jobAnalysis) {
-        Integer studentId = jobAnalysis.getStudent() != null ? jobAnalysis.getStudent().getId() : null;
-        String studentName = jobAnalysis.getStudent() != null ? jobAnalysis.getStudent().getFullName() : null;
         return new JobAnalysisDTOOut(
                 jobAnalysis.getId(),
                 jobAnalysis.getJobTitle(),
@@ -85,8 +73,31 @@ public class JobAnalysisService {
                 jobAnalysis.getMissingSkillsText(),
                 jobAnalysis.getMatchScore(),
                 jobAnalysis.getRecommendations(),
-                studentId,
-                studentName
+                toStudentSummary(jobAnalysis.getStudent()),
+                toSkillDtos(jobAnalysis.getSkills())
         );
+    }
+
+    private StudentSummaryDTOOut toStudentSummary(Student student) {
+        if (student == null) {
+            return null;
+        }
+        return new StudentSummaryDTOOut(
+                student.getId(),
+                student.getFullName(),
+                student.getEmail(),
+                student.getMajor(),
+                student.getTargetRole(),
+                student.getReadinessScore()
+        );
+    }
+
+    private Set<SkillDTOOut> toSkillDtos(Set<Skill> skills) {
+        if (skills == null) {
+            return null;
+        }
+        return skills.stream()
+                .map(skill -> new SkillDTOOut(skill.getId(), skill.getName(), skill.getCategory()))
+                .collect(Collectors.toSet());
     }
 }

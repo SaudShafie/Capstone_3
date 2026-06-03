@@ -21,29 +21,20 @@ public class MockInterviewDTOIN {
     @NotBlank(message = "Interview status is required")
     private String status;
 
-    @NotBlank(message = "Interview questions are required")
-    private String questions;
-
-    private String studentAnswers;
-
-    private String feedback;
-
-    @Min(value = 0, message = "Score cannot be negative")
-    private Integer score;
 
     private String url;
 
     @NotNull(message = "Created date and time are required")
     private LocalDateTime createdAt;
 
-    @NotNull(message = "Student id is required")
-    @Min(value = 1, message = "Student id must be a positive number")
-    private Integer studentId;
+//    @NotNull(message = "Student id is required")
+//    @Min(value = 1, message = "Student id must be a positive number")
+//    private Integer studentId;
+//
+//    @NotNull(message = "Mentor id is required")
+//    @Min(value = 1, message = "Mentor id must be a positive number")
+//    private Integer mentorId;
 
-    @NotNull(message = "Mentor id is required")
-    @Min(value = 1, message = "Mentor id must be a positive number")
-    private Integer mentorId;
 
-    @Min(value = 1, message = "Job analysis id must be a positive number")
-    private Integer jobAnalysisId;
+
 }

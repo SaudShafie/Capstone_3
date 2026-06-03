@@ -3,7 +3,7 @@ package org.example.capstone_3.DTO.OUT;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -23,7 +23,7 @@ public class JobAnalysisDTOOut {
 
     private String recommendations;
 
-    private Integer studentId;
+    private StudentSummaryDTOOut student;
 
-    private String studentName;
+    private Set<SkillDTOOut> skills;
 }

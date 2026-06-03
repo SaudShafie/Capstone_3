@@ -5,11 +5,13 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class AdminDTOOut {
+public class JobAnalysisSummaryDTOOut {
 
     private Integer id;
 
-    private String fullName;
+    private String jobTitle;
 
-    private String email;
+    private Integer matchScore;
+
+    private String missingSkillsText;
 }

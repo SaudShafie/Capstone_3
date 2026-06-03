@@ -5,13 +5,11 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class MentorDTOOut {
+public class MentorSummaryDTOOut {
 
     private Integer id;
 
     private String fullName;
-
-    private String email;
 
     private String jobTitle;
 
@@ -19,15 +17,5 @@ public class MentorDTOOut {
 
     private String specialization;
 
-    private Integer yearsExperience;
-
-    private String bio;
-
-    private Boolean volunteer;
-
-    private Double sessionPrice;
-
     private Double rating;
-
-    private Boolean available;
 }

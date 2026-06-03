@@ -17,4 +17,7 @@ public class ReviewDTOOUT {
     private LocalDateTime createdAt;
     private Integer studentId;
     private Integer mentorId;
+
+//    private StudentSummaryDTOOut student;
+//    private MentorSummaryDTOOut mentor;
 }

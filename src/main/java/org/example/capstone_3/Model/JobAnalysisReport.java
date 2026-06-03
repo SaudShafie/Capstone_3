@@ -19,15 +19,16 @@ public class JobAnalysisReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "text not null")
     private String summary;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "text not null")
     private String improvements;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "text not null")
     private String recommendations;
 
+    @Column(updatable = false, columnDefinition = "datetime not null")
     private LocalDateTime generatedAt;
 
     @ManyToOne
@@ -35,6 +36,6 @@ public class JobAnalysisReport {
     private Student student;
 
     @OneToOne
-    @JoinColumn(name = "job_analysis_id")
+    @JoinColumn(name = "job_analysis_id", unique = true)
     private JobAnalysis jobAnalysis;
 }

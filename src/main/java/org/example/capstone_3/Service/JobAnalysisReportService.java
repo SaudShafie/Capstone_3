@@ -2,8 +2,9 @@ package org.example.capstone_3.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
-import org.example.capstone_3.DTO.IN.JobAnalysisReportDTOIn;
 import org.example.capstone_3.DTO.OUT.JobAnalysisReportDTOOut;
+import org.example.capstone_3.DTO.OUT.JobAnalysisSummaryDTOOut;
+import org.example.capstone_3.DTO.OUT.StudentSummaryDTOOut;
 import org.example.capstone_3.Model.JobAnalysis;
 import org.example.capstone_3.Model.JobAnalysisReport;
 import org.example.capstone_3.Model.Student;
@@ -13,6 +14,7 @@ import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,101 +25,145 @@ public class JobAnalysisReportService {
     private final JobAnalysisRepository jobAnalysisRepository;
     private final StudentRepository studentRepository;
 
-    public JobAnalysisReportDTOOut create(JobAnalysisReportDTOIn dto) {
-        JobAnalysis jobAnalysis = findJobAnalysis(dto.getJobAnalysisId());
-        Student student = findStudent(dto.getStudentId());
+    public void create(Integer jobAnalysisId) {
 
-        if (jobAnalysis.getStudent() != null && student != null
-                && !jobAnalysis.getStudent().getId().equals(student.getId())) {
-            throw new ApiException("This job analysis does not belong to this student");
+        JobAnalysis jobAnalysis = jobAnalysisRepository.findJobAnalysisById(jobAnalysisId);
+
+        if (jobAnalysis == null) {
+            throw new ApiException("Job analysis with id " + jobAnalysisId + " not found");
+        }
+
+        if (jobAnalysis.getStudent() == null) {
+            throw new ApiException("Job analysis is not linked to any student");
+        }
+
+        if (jobAnalysisReportRepository.findJobAnalysisReportByJobAnalysisId(jobAnalysisId) != null) {
+            throw new ApiException("This job analysis already has a report");
         }
 
         JobAnalysisReport report = new JobAnalysisReport();
-        applyDto(report, dto);
-        report.setGeneratedAt(LocalDateTime.now());
-        report.setStudent(student != null ? student : jobAnalysis.getStudent());
+
         report.setJobAnalysis(jobAnalysis);
-        return toDtoOut(jobAnalysisReportRepository.save(report));
+        report.setStudent(jobAnalysis.getStudent());
+        report.setGeneratedAt(LocalDateTime.now());
+
+        // مؤقتًا إلى أن تربطين AI
+        report.setSummary("Report summary has not been generated yet");
+        report.setImprovements("Improvements have not been generated yet");
+        report.setRecommendations("Recommendations have not been generated yet");
+
+        jobAnalysisReportRepository.save(report);
     }
 
     public JobAnalysisReportDTOOut getById(Integer id) {
+
         JobAnalysisReport report = jobAnalysisReportRepository.findJobAnalysisReportById(id);
+
         if (report == null) {
             throw new ApiException("Job analysis report with id " + id + " not found");
         }
+
         return toDtoOut(report);
     }
 
     public List<JobAnalysisReportDTOOut> getAll() {
-        return jobAnalysisReportRepository.findAll().stream().map(this::toDtoOut).toList();
+
+        List<JobAnalysisReport> reports = jobAnalysisReportRepository.findAll();
+
+        List<JobAnalysisReportDTOOut> reportDTOOuts = new ArrayList<>();
+
+        for (JobAnalysisReport report : reports) {
+            reportDTOOuts.add(toDtoOut(report));
+        }
+
+        return reportDTOOuts;
     }
 
-    public JobAnalysisReportDTOOut update(Integer id, JobAnalysisReportDTOIn dto) {
-        JobAnalysisReport report = jobAnalysisReportRepository.findJobAnalysisReportById(id);
-        if (report == null) {
-            throw new ApiException("Job analysis report with id " + id + " not found");
-        }
-        applyDto(report, dto);
-        if (dto.getStudentId() != null) {
-            report.setStudent(findStudent(dto.getStudentId()));
-        }
-        if (dto.getJobAnalysisId() != null) {
-            report.setJobAnalysis(findJobAnalysis(dto.getJobAnalysisId()));
-        }
-        return toDtoOut(jobAnalysisReportRepository.save(report));
-    }
+    public List<JobAnalysisReportDTOOut> getByStudentId(Integer studentId) {
 
-    public void delete(Integer id) {
-        JobAnalysisReport report = jobAnalysisReportRepository.findJobAnalysisReportById(id);
-        if (report == null) {
-            throw new ApiException("Job analysis report with id " + id + " not found");
-        }
-        jobAnalysisReportRepository.deleteById(id);
-    }
-
-    private void applyDto(JobAnalysisReport report, JobAnalysisReportDTOIn dto) {
-        report.setSummary(dto.getSummary());
-        report.setImprovements(dto.getImprovements());
-        report.setRecommendations(dto.getRecommendations());
-    }
-
-    private Student findStudent(Integer studentId) {
-        if (studentId == null) {
-            return null;
-        }
         Student student = studentRepository.findStudentById(studentId);
+
         if (student == null) {
             throw new ApiException("Student with id " + studentId + " not found");
         }
-        return student;
+
+        List<JobAnalysisReport> reports = jobAnalysisReportRepository.findJobAnalysisReportsByStudentId(studentId);
+
+        List<JobAnalysisReportDTOOut> reportDTOOuts = new ArrayList<>();
+
+        for (JobAnalysisReport report : reports) {
+            reportDTOOuts.add(toDtoOut(report));
+        }
+
+        return reportDTOOuts;
     }
 
-    private JobAnalysis findJobAnalysis(Integer jobAnalysisId) {
-        if (jobAnalysisId == null) {
-            throw new ApiException("Job analysis id is required");
+    public void update(Integer id) {
+
+        JobAnalysisReport report = jobAnalysisReportRepository.findJobAnalysisReportById(id);
+
+        if (report == null) {
+            throw new ApiException("Job analysis report with id " + id + " not found");
         }
-        JobAnalysis jobAnalysis = jobAnalysisRepository.findJobAnalysisById(jobAnalysisId);
-        if (jobAnalysis == null) {
-            throw new ApiException("Job analysis with id " + jobAnalysisId + " not found");
+
+        // مؤقتًا: لاحقًا هنا يصير regenerate من AI
+        report.setGeneratedAt(LocalDateTime.now());
+        report.setSummary("Report summary has been regenerated");
+        report.setImprovements("Improvements have been regenerated");
+        report.setRecommendations("Recommendations have been regenerated");
+
+        jobAnalysisReportRepository.save(report);
+    }
+
+    public void delete(Integer id) {
+
+        JobAnalysisReport report = jobAnalysisReportRepository.findJobAnalysisReportById(id);
+
+        if (report == null) {
+            throw new ApiException("Job analysis report with id " + id + " not found");
         }
-        return jobAnalysis;
+
+        jobAnalysisReportRepository.delete(report);
     }
 
     private JobAnalysisReportDTOOut toDtoOut(JobAnalysisReport report) {
-        Integer studentId = report.getStudent() != null ? report.getStudent().getId() : null;
-        String studentName = report.getStudent() != null ? report.getStudent().getFullName() : null;
-        Integer jobAnalysisId = report.getJobAnalysis() != null ? report.getJobAnalysis().getId() : null;
-        String jobTitle = report.getJobAnalysis() != null ? report.getJobAnalysis().getJobTitle() : null;
         return new JobAnalysisReportDTOOut(
                 report.getId(),
                 report.getSummary(),
                 report.getImprovements(),
                 report.getRecommendations(),
-                report.getGeneratedAt(),
-                studentId,
-                studentName,
-                jobAnalysisId,
-                jobTitle
+                mapStudent(report.getStudent()),
+                mapJobAnalysis(report.getJobAnalysis())
+        );
+    }
+
+    private StudentSummaryDTOOut mapStudent(Student student) {
+
+        if (student == null) {
+            return null;
+        }
+
+        return new StudentSummaryDTOOut(
+                student.getId(),
+                student.getFullName(),
+                student.getEmail(),
+                student.getMajor(),
+                student.getTargetRole(),
+                student.getReadinessScore()
+        );
+    }
+
+    private JobAnalysisSummaryDTOOut mapJobAnalysis(JobAnalysis jobAnalysis) {
+
+        if (jobAnalysis == null) {
+            return null;
+        }
+
+        return new JobAnalysisSummaryDTOOut(
+                jobAnalysis.getId(),
+                jobAnalysis.getJobTitle(),
+                jobAnalysis.getMatchScore(),
+                jobAnalysis.getMissingSkillsText()
         );
     }
 }

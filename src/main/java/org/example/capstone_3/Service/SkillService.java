@@ -16,10 +16,10 @@ public class SkillService {
 
     private final SkillRepository skillRepository;
 
-    public SkillDTOOut create(SkillDTOIn dto) {
+    public void create(SkillDTOIn dto) {
         Skill skill = new Skill();
         applyDto(skill, dto);
-        return toDtoOut(skillRepository.save(skill));
+        skillRepository.save(skill);
     }
 
     public SkillDTOOut getById(Integer id) {
@@ -34,13 +34,13 @@ public class SkillService {
         return skillRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    public SkillDTOOut update(Integer id, SkillDTOIn dto) {
+    public void update(Integer id, SkillDTOIn dto) {
         Skill skill = skillRepository.findSkillById(id);
         if (skill == null) {
             throw new ApiException("Skill with id " + id + " not found");
         }
         applyDto(skill, dto);
-        return toDtoOut(skillRepository.save(skill));
+      skillRepository.save(skill);
     }
 
     public void delete(Integer id) {

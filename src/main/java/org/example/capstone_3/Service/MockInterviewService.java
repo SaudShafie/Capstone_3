@@ -4,11 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.MockInterviewDTOIN;
 import org.example.capstone_3.DTO.OUT.MockInterviewDTOOUT;
-import org.example.capstone_3.Model.JobAnalysis;
 import org.example.capstone_3.Model.Mentor;
 import org.example.capstone_3.Model.MockInterview;
 import org.example.capstone_3.Model.Student;
-import org.example.capstone_3.Repository.JobAnalysisRepository;
 import org.example.capstone_3.Repository.MentorRepository;
 import org.example.capstone_3.Repository.MockInterviewRepository;
 import org.example.capstone_3.Repository.StudentRepository;
@@ -23,12 +21,11 @@ public class MockInterviewService {
     private final MockInterviewRepository mockInterviewRepository;
     private final StudentRepository studentRepository;
     private final MentorRepository mentorRepository;
-    private final JobAnalysisRepository jobAnalysisRepository;
 
-    public MockInterviewDTOOUT create(MockInterviewDTOIN dto) {
+    public void create(MockInterviewDTOIN dto) {
         MockInterview mockInterview = new MockInterview();
         applyDto(mockInterview, dto);
-        return toDtoOut(mockInterviewRepository.save(mockInterview));
+        mockInterviewRepository.save(mockInterview);
     }
 
     public MockInterviewDTOOUT getById(Integer id) {
@@ -43,13 +40,13 @@ public class MockInterviewService {
         return mockInterviewRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    public MockInterviewDTOOUT update(Integer id, MockInterviewDTOIN dto) {
+    public void update(Integer id, MockInterviewDTOIN dto) {
         MockInterview mockInterview = mockInterviewRepository.findMockInterviewById(id);
         if (mockInterview == null) {
             throw new ApiException("Mock interview with id " + id + " not found");
         }
         applyDto(mockInterview, dto);
-        return toDtoOut(mockInterviewRepository.save(mockInterview));
+        mockInterviewRepository.save(mockInterview);
     }
 
     public void delete(Integer id) {
@@ -67,12 +64,10 @@ public class MockInterviewService {
         mockInterview.setQuestions(dto.getQuestions());
         mockInterview.setStudentAnswers(dto.getStudentAnswers());
         mockInterview.setFeedback(dto.getFeedback());
-        mockInterview.setScore(dto.getScore());
         mockInterview.setUrl(dto.getUrl());
         mockInterview.setCreatedAt(dto.getCreatedAt());
         mockInterview.setStudent(findStudent(dto.getStudentId()));
         mockInterview.setMentor(findMentor(dto.getMentorId()));
-        mockInterview.setJobAnalysis(findJobAnalysis(dto.getJobAnalysisId()));
     }
 
     private Student findStudent(Integer studentId) {
@@ -97,21 +92,9 @@ public class MockInterviewService {
         return mentor;
     }
 
-    private JobAnalysis findJobAnalysis(Integer jobAnalysisId) {
-        if (jobAnalysisId == null) {
-            return null;
-        }
-        JobAnalysis jobAnalysis = jobAnalysisRepository.findJobAnalysisById(jobAnalysisId);
-        if (jobAnalysis == null) {
-            throw new ApiException("Job analysis with id " + jobAnalysisId + " not found");
-        }
-        return jobAnalysis;
-    }
-
     private MockInterviewDTOOUT toDtoOut(MockInterview mockInterview) {
         Integer studentId = mockInterview.getStudent() != null ? mockInterview.getStudent().getId() : null;
         Integer mentorId = mockInterview.getMentor() != null ? mockInterview.getMentor().getId() : null;
-        Integer jobAnalysisId = mockInterview.getJobAnalysis() != null ? mockInterview.getJobAnalysis().getId() : null;
         return new MockInterviewDTOOUT(
                 mockInterview.getId(),
                 mockInterview.getInterviewType(),
@@ -120,12 +103,12 @@ public class MockInterviewService {
                 mockInterview.getQuestions(),
                 mockInterview.getStudentAnswers(),
                 mockInterview.getFeedback(),
-                mockInterview.getScore(),
+                null,
                 mockInterview.getUrl(),
                 mockInterview.getCreatedAt(),
                 studentId,
                 mentorId,
-                jobAnalysisId
+                null
         );
     }
 }

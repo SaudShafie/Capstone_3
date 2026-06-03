@@ -22,10 +22,10 @@ public class MockInterviewReportService {
     private final MockInterviewRepository mockInterviewRepository;
     private final StudentRepository studentRepository;
 
-    public MockInterviewReportDTOOUT create(MockInterviewReportDTOIN dto) {
+    public void create(MockInterviewReportDTOIN dto) {
         MockInterviewReport mockInterviewReport = new MockInterviewReport();
         applyDto(mockInterviewReport, dto);
-        return toDtoOut(mockInterviewReportRepository.save(mockInterviewReport));
+        mockInterviewReportRepository.save(mockInterviewReport);
     }
 
     public MockInterviewReportDTOOUT getById(Integer id) {
@@ -40,13 +40,13 @@ public class MockInterviewReportService {
         return mockInterviewReportRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    public MockInterviewReportDTOOUT update(Integer id, MockInterviewReportDTOIN dto) {
+    public void update(Integer id, MockInterviewReportDTOIN dto) {
         MockInterviewReport mockInterviewReport = mockInterviewReportRepository.findMockInterviewReportById(id);
         if (mockInterviewReport == null) {
             throw new ApiException("Mock interview report with id " + id + " not found");
         }
         applyDto(mockInterviewReport, dto);
-        return toDtoOut(mockInterviewReportRepository.save(mockInterviewReport));
+       mockInterviewReportRepository.save(mockInterviewReport);
     }
 
     public void delete(Integer id) {

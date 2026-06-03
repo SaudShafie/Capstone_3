@@ -54,7 +54,7 @@ public class RoadmapService {
 
         Roadmap roadmap = new Roadmap();
 
-        roadmap.setTitle(dto.getTitle());
+        roadmap.setTitle(dto.getTargetRole());
         roadmap.setTargetRole(dto.getTargetRole());
         roadmap.setProgressPercentage(0);
         roadmap.setCreatedAt(LocalDateTime.now());
@@ -72,8 +72,8 @@ public class RoadmapService {
             throw new ApiException("Roadmap not found");
         }
 
-        roadmap.setTitle(dto.getTitle());
         roadmap.setTargetRole(dto.getTargetRole());
+        roadmap.setTitle(dto.getTargetRole());
 
         roadmapRepository.save(roadmap);
     }
@@ -101,11 +101,11 @@ public class RoadmapService {
                 roadmap.getId(),
                 roadmap.getTitle(),
                 roadmap.getTargetRole(),
+                roadmap.getSkillGapSummary(),
+                roadmap.getRecommendations(),
                 roadmap.getProgressPercentage(),
-                roadmap.getCreatedAt(),
-                roadmap.getStudent() != null ? roadmap.getStudent().getId() : null,
-                null,
-                steps
+                steps,
+                roadmap.getCreatedAt()
         );
     }
 

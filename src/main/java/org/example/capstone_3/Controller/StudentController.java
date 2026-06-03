@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiResponse;
 import org.example.capstone_3.DTO.IN.StudentDTOIn;
+import org.example.capstone_3.Service.RoadmapService;
 import org.example.capstone_3.Service.StudentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class StudentController {
 
     private final StudentService studentService;
+    private final RoadmapService roadmapService;
 
     @GetMapping("/get")
     public ResponseEntity<?> get() {
@@ -23,6 +25,11 @@ public class StudentController {
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getStudentById(@PathVariable Integer id) {
         return ResponseEntity.ok(studentService.getById(id));
+    }
+
+    @GetMapping("/get/{id}/roadmaps")
+    public ResponseEntity<?> getStudentRoadmaps(@PathVariable Integer id) {
+        return ResponseEntity.ok(roadmapService.getRoadmapsByStudentId(id));
     }
 
     @PostMapping("/add")
@@ -41,5 +48,21 @@ public class StudentController {
     public ResponseEntity<?> deleteStudent(@PathVariable Integer id) {
         studentService.delete(id);
         return ResponseEntity.ok().body(new ApiResponse("Student has been deleted successfully"));
+    }
+
+    @PostMapping("/add-skill/{studentId}/{skillId}")
+    public ResponseEntity<?> addSkillToStudent(
+            @PathVariable Integer studentId,
+            @PathVariable Integer skillId) {
+        studentService.addSkillToStudent(studentId, skillId);
+        return ResponseEntity.ok().body(new ApiResponse("Skill has been added to student successfully"));
+    }
+
+    @DeleteMapping("/remove-skill/{studentId}/{skillId}")
+    public ResponseEntity<?> removeSkillFromStudent(
+            @PathVariable Integer studentId,
+            @PathVariable Integer skillId) {
+        studentService.removeSkillFromStudent(studentId, skillId);
+        return ResponseEntity.ok().body(new ApiResponse("Skill has been removed from student successfully"));
     }
 }

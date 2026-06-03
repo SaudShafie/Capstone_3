@@ -1,0 +1,15 @@
+# Copy this file to application-local.properties (same folder).
+# application-local.properties is gitignored — use it for secrets and API keys.
+
+# --- Database (local) ---
+spring.datasource.password=
+
+# --- Schema (optional) ---
+# Use create-drop only when you want Hibernate to wipe and recreate all tables on each app start (noisy FK drop warnings on empty DB are normal)
+# spring.jpa.hibernate.ddl-auto=create-drop
+
+# --- API keys (uncomment and fill when needed) ---
+# openai.api.key=
+# gemini.api.key=
+# stripe.api.key=
+# sendgrid.api.key=

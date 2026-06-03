@@ -17,13 +17,14 @@ public class RoadmapDTOOUT {
 
     private String targetRole;
 
+    private String skillGapSummary;
+
+    private String recommendations;
+
     private Integer progressPercentage;
+
+    private List<RoadmapStepDTOOUT> roadmapSteps;
 
     private LocalDateTime createdAt;
 
-    private Integer studentId;
-
-    private Integer jobAnalysisId;
-
-    private List<RoadmapStepDTOOUT> roadmapSteps;
 }

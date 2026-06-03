@@ -20,11 +20,13 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(columnDefinition = "int not null")
     private Integer rating;
 
     @Column(columnDefinition = "TEXT")
     private String comment;
 
+    @Column(columnDefinition = "datetime not null")
     private LocalDateTime createdAt;
 
     @ManyToOne

@@ -63,6 +63,23 @@ public class RoadmapStepService {
         roadmapStepRepository.save(roadmapStep);
     }
 
+    public void saveGeneratedStep(
+            Roadmap roadmap,
+            String title,
+            String description,
+            Integer orderNumber,
+            Skill skill) {
+        RoadmapStep roadmapStep = new RoadmapStep();
+        roadmapStep.setTitle(title);
+        roadmapStep.setDescription(description);
+        roadmapStep.setOrderNumber(orderNumber);
+        roadmapStep.setCompleted(false);
+        roadmapStep.setCompletedAt(LocalDateTime.now());
+        roadmapStep.setRoadmap(roadmap);
+        roadmapStep.setSkill(skill);
+        roadmapStepRepository.save(roadmapStep);
+    }
+
     public void updateRoadmapStep(Integer id, RoadmapStepDTOIN dto){
         RoadmapStep roadmapStep = roadmapStepRepository.findRoadmapStepById(id);
         if(roadmapStep == null){
@@ -102,7 +119,6 @@ public class RoadmapStepService {
                 roadmapStep.getDescription(),
                 roadmapStep.getOrderNumber(),
                 roadmapStep.getCompleted(),
-                null,
                 skillName,
                 roadmapStep.getCompletedAt()
         );

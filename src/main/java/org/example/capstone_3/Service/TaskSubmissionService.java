@@ -62,7 +62,7 @@ public class TaskSubmissionService {
         TaskSubmission submission = new TaskSubmission();
 
         submission.setAnswerText(dto.getAnswerText());
-        submission.setStatus("SUBMITTED");
+        submission.setCompleted(false);
         submission.setScore(0);
         submission.setSubmittedAt(LocalDateTime.now());
         submission.setAiFeedback(null);
@@ -114,7 +114,7 @@ public class TaskSubmissionService {
                 submission.getId(),
                 taskTitle,
                 submission.getAnswerText(),
-                submission.getStatus(),
+                submission.getCompleted() != null && submission.getCompleted() ? "COMPLETED" : "SUBMITTED",
                 submission.getScore(),
                 submission.getAiFeedback(),
                 studentName,

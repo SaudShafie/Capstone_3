@@ -22,10 +22,10 @@ public class ChallengeAttemptService {
     private final ChallengeRepository challengeRepository;
     private final StudentRepository studentRepository;
 
-    public ChallengeAttemptDTOOUT create(ChallengeAttemptDTOIN dto) {
+    public void create(ChallengeAttemptDTOIN dto) {
         ChallengeAttempt challengeAttempt = new ChallengeAttempt();
         applyDto(challengeAttempt, dto);
-        return toDtoOut(challengeAttemptRepository.save(challengeAttempt));
+        challengeAttemptRepository.save(challengeAttempt);
     }
 
     public ChallengeAttemptDTOOUT getById(Integer id) {
@@ -40,13 +40,13 @@ public class ChallengeAttemptService {
         return challengeAttemptRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    public ChallengeAttemptDTOOUT update(Integer id, ChallengeAttemptDTOIN dto) {
+    public void update(Integer id, ChallengeAttemptDTOIN dto) {
         ChallengeAttempt challengeAttempt = challengeAttemptRepository.findChallengeAttemptById(id);
         if (challengeAttempt == null) {
             throw new ApiException("Challenge attempt with id " + id + " not found");
         }
         applyDto(challengeAttempt, dto);
-        return toDtoOut(challengeAttemptRepository.save(challengeAttempt));
+        challengeAttemptRepository.save(challengeAttempt);
     }
 
     public void delete(Integer id) {

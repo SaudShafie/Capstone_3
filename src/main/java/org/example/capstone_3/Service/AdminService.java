@@ -17,11 +17,11 @@ public class AdminService {
 
     private final AdminRepository adminRepository;
 
-    public AdminDTOOut create(AdminDTOIn dto) {
+    public void create(AdminDTOIn dto) {
         Admin admin = new Admin();
         applyDto(admin, dto);
         admin.setCreatedAt(LocalDateTime.now());
-        return toDtoOut(adminRepository.save(admin));
+        adminRepository.save(admin);
     }
 
     public AdminDTOOut getById(Integer id) {

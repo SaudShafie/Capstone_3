@@ -56,7 +56,6 @@ public class RoadmapStepService {
         roadmapStep.setDescription(dto.getDescription());
         roadmapStep.setOrderNumber(dto.getOrderNumber());
         roadmapStep.setCompleted(false);
-        roadmapStep.setXpReward(dto.getXpReward());
         roadmapStep.setCompletedAt(LocalDateTime.now());
 
         roadmapStep.setRoadmap(roadmap);
@@ -76,7 +75,6 @@ public class RoadmapStepService {
         roadmapStep.setTitle(dto.getTitle());
         roadmapStep.setDescription(dto.getDescription());
         roadmapStep.setOrderNumber(dto.getOrderNumber());
-        roadmapStep.setXpReward(dto.getXpReward());
         roadmapStep.setSkill(skill);
 
         roadmapStepRepository.save(roadmapStep);
@@ -104,7 +102,7 @@ public class RoadmapStepService {
                 roadmapStep.getDescription(),
                 roadmapStep.getOrderNumber(),
                 roadmapStep.getCompleted(),
-                roadmapStep.getXpReward(),
+                null,
                 skillName,
                 roadmapStep.getCompletedAt()
         );

@@ -1,6 +1,8 @@
 package org.example.capstone_3.Service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.capstone_3.AI.AiException;
+import org.example.capstone_3.AI.AiService;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.ChallengeAttemptDTOIN;
 import org.example.capstone_3.DTO.OUT.ChallengeAttemptDTOOUT;
@@ -12,19 +14,41 @@ import org.example.capstone_3.Repository.ChallengeRepository;
 import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class ChallengeAttemptService {
 
+    private static final Pattern IS_CORRECT_PATTERN =
+            Pattern.compile("\"isCorrect\"\\s*:\\s*(true|false)");
+
     private final ChallengeAttemptRepository challengeAttemptRepository;
     private final ChallengeRepository challengeRepository;
     private final StudentRepository studentRepository;
+    private final AiService aiService;
 
-    public void create(ChallengeAttemptDTOIN dto) {
+    public void create(Integer student_id, Integer challenge_id, ChallengeAttemptDTOIN dto) {
+        Student student = findStudent(student_id);
+        Challenge challenge = findChallenge(challenge_id);
+
+        boolean isCorrect = fetchIsCorrectFromAi(dto.getSubmittedAnswer(), challenge.getCorrectAnswer());
+
         ChallengeAttempt challengeAttempt = new ChallengeAttempt();
         applyDto(challengeAttempt, dto);
+        challengeAttempt.setStudent(student);
+        challengeAttempt.setChallenge(challenge);
+        challengeAttempt.setCorrect(isCorrect);
+        challengeAttempt.setSubmittedAt(LocalDateTime.now());
+
+        if (isCorrect) {
+            student.setXp(student.getXp() + challenge.getPoints());
+            studentRepository.save(student);
+        }
+
         challengeAttemptRepository.save(challengeAttempt);
     }
 
@@ -45,7 +69,26 @@ public class ChallengeAttemptService {
         if (challengeAttempt == null) {
             throw new ApiException("Challenge attempt with id " + id + " not found");
         }
-        applyDto(challengeAttempt, dto);
+
+        Challenge challenge = challengeAttempt.getChallenge();
+        Student student = challengeAttempt.getStudent();
+
+        boolean isCorrect = fetchIsCorrectFromAi(dto.getSubmittedAnswer(), challenge.getCorrectAnswer());
+
+        // reverse old points if previous attempt was correct
+        if (challengeAttempt.getCorrect()) {
+            student.setXp(student.getXp() - challenge.getPoints());
+        }
+
+        challengeAttempt.setSubmittedAnswer(dto.getSubmittedAnswer());
+        challengeAttempt.setSubmittedAt(LocalDateTime.now());
+        challengeAttempt.setCorrect(isCorrect);
+
+        if (isCorrect) {
+            student.setXp(student.getXp() + challenge.getPoints());
+        }
+
+        studentRepository.save(student);
         challengeAttemptRepository.save(challengeAttempt);
     }
 
@@ -59,12 +102,8 @@ public class ChallengeAttemptService {
 
     private void applyDto(ChallengeAttempt challengeAttempt, ChallengeAttemptDTOIN dto) {
         challengeAttempt.setSubmittedAnswer(dto.getSubmittedAnswer());
-        challengeAttempt.setCorrect(dto.getCorrect());
-        challengeAttempt.setEarnedPoints(dto.getEarnedPoints());
-        challengeAttempt.setSubmittedAt(dto.getSubmittedAt());
-        challengeAttempt.setStudent(findStudent(dto.getStudentId()));
-        challengeAttempt.setChallenge(findChallenge(dto.getChallengeId()));
     }
+
 
     private Student findStudent(Integer studentId) {
         if (studentId == null) {
@@ -95,10 +134,45 @@ public class ChallengeAttemptService {
                 challengeAttempt.getId(),
                 challengeAttempt.getSubmittedAnswer(),
                 challengeAttempt.getCorrect(),
-                challengeAttempt.getEarnedPoints(),
                 challengeAttempt.getSubmittedAt(),
                 studentId,
                 challengeId
         );
+    }
+
+    // AI service
+
+    private boolean fetchIsCorrectFromAi(String submittedAnswer, String correctAnswer) {
+        String prompt = buildIsCorrectPrompt(submittedAnswer, correctAnswer);
+        String json = aiService.ask(prompt);
+        return parseIsCorrect(json);
+    }
+
+    private String buildIsCorrectPrompt(String submittedAnswer, String correctAnswer) {
+        return """
+            You are a professional answer evaluator for a career development platform.
+            Your job is to compare a student's submitted answer against the correct answer
+            and determine whether the student's answer is correct.
+            
+            Be flexible with wording — if the meaning and core concept match, consider it correct.
+            Do not penalize for minor spelling differences or different phrasing of the same idea.
+            
+            Respond with JSON only using this exact shape:
+            {"isCorrect": false}
+            
+            Constraints:
+            - isCorrect: must be exactly true or false
+            
+            Correct Answer: %s
+            Student Answer: %s
+            """.formatted(correctAnswer, submittedAnswer);
+    }
+
+    private boolean parseIsCorrect(String json) {
+        Matcher matcher = IS_CORRECT_PATTERN.matcher(json);
+        if (!matcher.find()) {
+            throw new AiException("AI response did not contain isCorrect.");
+        }
+        return Boolean.parseBoolean(matcher.group(1));
     }
 }

@@ -26,11 +26,11 @@ public class ReviewDTOIN {
     private LocalDateTime createdAt;
 
     //in path
-    @NotNull(message = "Student id is required")
-    @Min(value = 1, message = "Student id must be a positive number")
-    private Integer studentId;
-
-    @NotNull(message = "Mentor id is required")
-    @Min(value = 1, message = "Mentor id must be a positive number")
-    private Integer mentorId;
+//    @NotNull(message = "Student id is required")
+//    @Min(value = 1, message = "Student id must be a positive number")
+//    private Integer studentId;
+//
+//    @NotNull(message = "Mentor id is required")
+//    @Min(value = 1, message = "Mentor id must be a positive number")
+//    private Integer mentorId;
 }

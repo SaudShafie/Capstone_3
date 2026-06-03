@@ -102,7 +102,7 @@ public class RoadmapService {
                 roadmap.getTitle(),
                 roadmap.getTargetRole(),
                 roadmap.getSkillGapSummary(),
-                roadmap.getRecommendations(),
+                null,
                 roadmap.getProgressPercentage(),
                 steps,
                 roadmap.getCreatedAt()

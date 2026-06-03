@@ -31,9 +31,6 @@ public class RoadmapStep {
     @Column(columnDefinition = "boolean default false")
     private Boolean completed;
 
-    @Column(columnDefinition = "int not null")
-    private Integer xpReward;
-
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime completedAt;
 

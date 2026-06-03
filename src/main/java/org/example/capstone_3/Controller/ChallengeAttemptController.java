@@ -25,9 +25,9 @@ public class ChallengeAttemptController {
         return ResponseEntity.ok(challengeAttemptService.getById(id));
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> saveChallengeAttempt(@RequestBody @Valid ChallengeAttemptDTOIN challengeAttemptDTOIN) {
-        challengeAttemptService.create(challengeAttemptDTOIN);
+    @PostMapping("{student_id}/create-attempt/{challenge_id}")
+    public ResponseEntity<?> saveChallengeAttempt(@PathVariable Integer student_id,@PathVariable Integer challenge_id, @RequestBody @Valid ChallengeAttemptDTOIN challengeAttemptDTOIN) {
+        challengeAttemptService.create(student_id,challenge_id, challengeAttemptDTOIN);
         return ResponseEntity.ok().body(new ApiResponse("Challenge attempt has been saved successfully"));
     }
 

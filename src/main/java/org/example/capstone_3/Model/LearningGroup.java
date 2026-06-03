@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Check;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Check(constraints = "group_type='PUBLIC' or group_type='PRIVATE'")
 public class LearningGroup {
 
     @Id
@@ -28,6 +30,12 @@ public class LearningGroup {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(columnDefinition = "varchar(10) not null")
+    private String groupType;
+
+    @Column(columnDefinition = "varchar(6)")
+    private String code;
 
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime createdAt;

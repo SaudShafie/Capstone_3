@@ -14,7 +14,6 @@ public class ChallengeAttemptDTOOUT {
     private Integer id;
     private String submittedAnswer;
     private Boolean correct;
-    private Integer earnedPoints;
     private LocalDateTime submittedAt;
     private Integer studentId;
     private Integer challengeId;

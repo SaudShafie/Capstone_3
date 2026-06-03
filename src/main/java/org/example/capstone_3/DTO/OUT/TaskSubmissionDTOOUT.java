@@ -18,11 +18,11 @@ public class TaskSubmissionDTOOUT {
 
     private String status;
 
-    private Integer score;
+    private Boolean completed;
 
     private String aiFeedback;
 
-    private String studentName;
+    private Integer score;
 
     private LocalDateTime submittedAt;
 }

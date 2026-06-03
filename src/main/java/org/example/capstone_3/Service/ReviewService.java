@@ -22,10 +22,10 @@ public class ReviewService {
     private final StudentRepository studentRepository;
     private final MentorRepository mentorRepository;
 
-    public ReviewDTOOUT create(ReviewDTOIN dto) {
+    public void create(ReviewDTOIN dto) {
         Review review = new Review();
         applyDto(review, dto);
-        return toDtoOut(reviewRepository.save(review));
+       reviewRepository.save(review);
     }
 
     public ReviewDTOOUT getById(Integer id) {
@@ -40,13 +40,13 @@ public class ReviewService {
         return reviewRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    public ReviewDTOOUT update(Integer id, ReviewDTOIN dto) {
+    public void update(Integer id, ReviewDTOIN dto) {
         Review review = reviewRepository.findReviewById(id);
         if (review == null) {
             throw new ApiException("Review with id " + id + " not found");
         }
         applyDto(review, dto);
-        return toDtoOut(reviewRepository.save(review));
+        reviewRepository.save(review);
     }
 
     public void delete(Integer id) {

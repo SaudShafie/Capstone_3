@@ -20,13 +20,16 @@ public class LearningGroup {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(columnDefinition = "varchar(80) not null")
     private String name;
 
+    @Column(columnDefinition = "varchar(80) not null")
     private String focusArea;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(columnDefinition = "datetime not null")
     private LocalDateTime createdAt;
 
     @ManyToMany(mappedBy = "learningGroups")

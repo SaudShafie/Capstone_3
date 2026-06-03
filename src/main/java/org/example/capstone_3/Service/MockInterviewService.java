@@ -4,12 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.MockInterviewDTOIN;
 import org.example.capstone_3.DTO.OUT.MockInterviewDTOOUT;
-import org.example.capstone_3.Model.Mentor;
 import org.example.capstone_3.Model.MockInterview;
-import org.example.capstone_3.Model.Student;
-import org.example.capstone_3.Repository.MentorRepository;
 import org.example.capstone_3.Repository.MockInterviewRepository;
-import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,8 +15,6 @@ import java.util.List;
 public class MockInterviewService {
 
     private final MockInterviewRepository mockInterviewRepository;
-    private final StudentRepository studentRepository;
-    private final MentorRepository mentorRepository;
 
     public void create(MockInterviewDTOIN dto) {
         MockInterview mockInterview = new MockInterview();
@@ -61,35 +55,8 @@ public class MockInterviewService {
         mockInterview.setInterviewType(dto.getInterviewType());
         mockInterview.setScheduledAt(dto.getScheduledAt());
         mockInterview.setStatus(dto.getStatus());
-        mockInterview.setQuestions(dto.getQuestions());
-        mockInterview.setStudentAnswers(dto.getStudentAnswers());
-        mockInterview.setFeedback(dto.getFeedback());
         mockInterview.setUrl(dto.getUrl());
         mockInterview.setCreatedAt(dto.getCreatedAt());
-        mockInterview.setStudent(findStudent(dto.getStudentId()));
-        mockInterview.setMentor(findMentor(dto.getMentorId()));
-    }
-
-    private Student findStudent(Integer studentId) {
-        if (studentId == null) {
-            return null;
-        }
-        Student student = studentRepository.findStudentById(studentId);
-        if (student == null) {
-            throw new ApiException("Student with id " + studentId + " not found");
-        }
-        return student;
-    }
-
-    private Mentor findMentor(Integer mentorId) {
-        if (mentorId == null) {
-            return null;
-        }
-        Mentor mentor = mentorRepository.findMentorById(mentorId);
-        if (mentor == null) {
-            throw new ApiException("Mentor with id " + mentorId + " not found");
-        }
-        return mentor;
     }
 
     private MockInterviewDTOOUT toDtoOut(MockInterview mockInterview) {

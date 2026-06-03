@@ -13,3 +13,5 @@ spring.datasource.password=
 # gemini.api.key=
 # stripe.api.key=
 # sendgrid.api.key=
+
+

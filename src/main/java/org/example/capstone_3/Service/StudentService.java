@@ -35,6 +35,8 @@ public class StudentService {
         applyDto(student, dto);
 
         student.setXp(0);
+
+
         student.setReadinessScore(0);
         student.setCreatedAt(LocalDateTime.now());
         student.setSkills(null);
@@ -202,4 +204,7 @@ public class StudentService {
 
         return skillDTOOuts;
     }
+
+
+    // add xp methods
 }

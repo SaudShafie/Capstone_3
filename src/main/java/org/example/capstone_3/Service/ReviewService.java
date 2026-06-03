@@ -61,8 +61,7 @@ public class ReviewService {
         review.setRating(dto.getRating());
         review.setComment(dto.getComment());
         review.setCreatedAt(dto.getCreatedAt());
-        review.setStudent(findStudent(dto.getStudentId()));
-        review.setMentor(findMentor(dto.getMentorId()));
+
     }
 
     private Student findStudent(Integer studentId) {

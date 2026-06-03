@@ -20,8 +20,6 @@ public class RoadmapStepDTOOUT {
 
     private Boolean completed;
 
-    private Integer xpReward;
-
     private String skillName;
 
     private LocalDateTime completedAt;

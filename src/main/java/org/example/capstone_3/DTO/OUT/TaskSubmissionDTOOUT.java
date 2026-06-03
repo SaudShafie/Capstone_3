@@ -18,8 +18,6 @@ public class TaskSubmissionDTOOUT {
 
     private String status;
 
-    private Boolean completed;
-
     private String aiFeedback;
 
     private Integer score;

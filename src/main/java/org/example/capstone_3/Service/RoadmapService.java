@@ -41,6 +41,7 @@ public class RoadmapService {
     private final StudentRepository studentRepository;
     private final SkillRepository skillRepository;
     private final RoadmapStepService roadmapStepService;
+    private final StudentProfilePromptHelper studentProfilePromptHelper;
     private final AiService aiService;
 
     @Transactional
@@ -166,13 +167,17 @@ public class RoadmapService {
                 
                 --- CV ---
                 %s
+                
+                --- GitHub ---
+                %s
                 """.formatted(
                 targetRole,
                 student.getMajor(),
                 student.getYearsExperience(),
                 studentSkills,
                 availableSkills,
-                formatCv(student)
+                studentProfilePromptHelper.formatCvForPrompt(student),
+                studentProfilePromptHelper.formatGithubForPrompt(student)
         );
 
         String json = aiService.ask(prompt);
@@ -294,13 +299,6 @@ public class RoadmapService {
         return skills.stream()
                 .map(Skill::getName)
                 .collect(Collectors.joining(", "));
-    }
-
-    private String formatCv(Student student) {
-        if (student.getCvText() == null || student.getCvText().isBlank()) {
-            return "(no CV provided)";
-        }
-        return student.getCvText();
     }
 
     private String extractJsonString(String json, String fieldName) {

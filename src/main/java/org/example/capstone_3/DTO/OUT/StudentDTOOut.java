@@ -25,7 +25,7 @@ public class StudentDTOOut {
 
     private String githubUrl;
 
-    private String cvText;
+    private String cvUrl;
 
     private Integer xp;
 

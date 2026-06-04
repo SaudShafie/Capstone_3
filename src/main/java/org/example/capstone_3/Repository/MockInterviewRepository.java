@@ -15,5 +15,5 @@ public interface MockInterviewRepository extends JpaRepository<MockInterview, In
 
     List<MockInterview> findMockInterviewsByStudentId(Integer studentId);
 
-    List<MockInterview> findMockInterviewsByMentorId(Integer mentorId);
+    List<MockInterview> findMockInterviewsByStudentIdAndInterviewMode(Integer studentId, String interviewMode);
 }

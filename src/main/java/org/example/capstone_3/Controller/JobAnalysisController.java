@@ -15,10 +15,10 @@ public class JobAnalysisController {
 
     private final JobAnalysisService jobAnalysisService;
 
-    @GetMapping("/get")
-    public ResponseEntity<?> get() {
-        return ResponseEntity.ok(jobAnalysisService.getAll());
-    }
+//    @GetMapping("/get")
+//    public ResponseEntity<?> get() {
+//        return ResponseEntity.ok(jobAnalysisService.getAll());
+//    }
 
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getJobAnalysisById(@PathVariable Integer id) {

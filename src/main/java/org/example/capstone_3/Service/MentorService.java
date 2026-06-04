@@ -35,10 +35,6 @@ public class MentorService {
         mentor.setAcceptedByAdmin(false);
         mentor.setCreatedAt(LocalDateTime.now());
 
-        if (Boolean.TRUE.equals(mentor.getVolunteer())) {
-            mentor.setSessionPrice(0.0);
-        }
-
         mentorRepository.save(mentor);
     }
 
@@ -114,10 +110,6 @@ public class MentorService {
 
         applyDto(mentor, dto);
 
-        if (Boolean.TRUE.equals(mentor.getVolunteer())) {
-            mentor.setSessionPrice(0.0);
-        }
-
         mentorRepository.save(mentor);
     }
 
@@ -141,7 +133,6 @@ public class MentorService {
         mentor.setSpecialization(dto.getSpecialization());
         mentor.setYearsExperience(dto.getYearsExperience());
         mentor.setBio(dto.getBio());
-        mentor.setVolunteer(dto.getVolunteer());
         mentor.setSessionPrice(dto.getSessionPrice());
     }
 
@@ -155,7 +146,6 @@ public class MentorService {
                 mentor.getSpecialization(),
                 mentor.getYearsExperience(),
                 mentor.getBio(),
-                mentor.getVolunteer(),
                 mentor.getSessionPrice(),
                 mentor.getRating(),
                 mentor.getAcceptedByAdmin()

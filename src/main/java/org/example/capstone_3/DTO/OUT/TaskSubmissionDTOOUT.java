@@ -18,7 +18,7 @@ public class TaskSubmissionDTOOUT {
 
     private String aiFeedback;
 
-    private Boolean correct;
+    private Integer score;
 
     private LocalDateTime submittedAt;
 }

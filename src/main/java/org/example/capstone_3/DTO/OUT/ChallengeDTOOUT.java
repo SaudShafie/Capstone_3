@@ -12,7 +12,6 @@ public class ChallengeDTOOUT {
     private Integer id;
     private String title;
     private String question;
-    private String correctAnswer;
     private Integer points;
     private String difficulty;
     private Integer skillId;

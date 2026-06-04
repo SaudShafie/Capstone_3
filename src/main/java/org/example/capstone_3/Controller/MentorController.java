@@ -16,18 +16,13 @@ public class MentorController {
     private final MentorService mentorService;
 
     @GetMapping("/get")
-    public ResponseEntity<?> get() {
-        return ResponseEntity.ok(mentorService.getAll());
-    }
-
-    @GetMapping("/get/accepted")
-    public ResponseEntity<?> getAcceptedMentors() {
-        return ResponseEntity.ok(mentorService.getAcceptedMentors());
+    public ResponseEntity<?> getApprovedMentors() {
+        return ResponseEntity.ok(mentorService.getApprovedMentors());
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<?> getMentorById(@PathVariable Integer id) {
-        return ResponseEntity.ok(mentorService.getById(id));
+    public ResponseEntity<?> getApprovedMentorById(@PathVariable Integer id) {
+        return ResponseEntity.ok(mentorService.getApprovedById(id));
     }
 
     @PostMapping("/add")
@@ -40,12 +35,6 @@ public class MentorController {
     public ResponseEntity<?> updateMentor(@PathVariable Integer id, @RequestBody @Valid MentorDTOIn mentorDTOIn) {
         mentorService.update(id, mentorDTOIn);
         return ResponseEntity.ok().body(new ApiResponse("Mentor has been updated successfully"));
-    }
-
-    @PutMapping("/approve/{adminId}/{mentorId}")
-    public ResponseEntity<?> approveMentor(@PathVariable Integer adminId, @PathVariable Integer mentorId) {
-        mentorService.approveMentor(adminId, mentorId);
-        return ResponseEntity.ok().body(new ApiResponse("Mentor has been approved successfully"));
     }
 
     @DeleteMapping("/delete/{id}")

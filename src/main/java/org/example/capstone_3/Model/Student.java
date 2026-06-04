@@ -45,6 +45,7 @@ public class Student {
     @Column(columnDefinition = "varchar(255)")
     private String githubUrl;
 
+    // cv url
     @Column(columnDefinition = "text")
     private String cvText;
 
@@ -84,10 +85,6 @@ public class Student {
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<JobAnalysis> jobAnalyses;
-
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<JobAnalysisReport> jobAnalysisReports;
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     @JsonIgnore

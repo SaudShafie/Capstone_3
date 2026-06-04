@@ -6,8 +6,6 @@ import org.example.capstone_3.AI.AiService;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.JobAnalysisDTOIn;
 import org.example.capstone_3.DTO.OUT.JobAnalysisDTOOut;
-import org.example.capstone_3.DTO.OUT.SkillDTOOut;
-import org.example.capstone_3.DTO.OUT.StudentSummaryDTOOut;
 import org.example.capstone_3.Model.JobAnalysis;
 import org.example.capstone_3.Model.Skill;
 import org.example.capstone_3.Model.Student;
@@ -102,18 +100,18 @@ public class JobAnalysisService {
         return jobAnalysisDTOOuts;
     }
 
-    public List<JobAnalysisDTOOut> getByStudentId(Integer studentId) {
-        Student student = studentRepository.findStudentById(studentId);
-        if (student == null) {
-            throw new ApiException("Student with id " + studentId + " not found");
-        }
-
-        List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
-        for (JobAnalysis jobAnalysis : jobAnalysisRepository.findJobAnalysesByStudentId(studentId)) {
-            jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
-        }
-        return jobAnalysisDTOOuts;
-    }
+//    public List<JobAnalysisDTOOut> getByStudentId(Integer studentId) {
+//        Student student = studentRepository.findStudentById(studentId);
+//        if (student == null) {
+//            throw new ApiException("Student with id " + studentId + " not found");
+//        }
+//
+//        List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
+//        for (JobAnalysis jobAnalysis : jobAnalysisRepository.findJobAnalysesByStudentId(studentId)) {
+//            jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
+//        }
+//        return jobAnalysisDTOOuts;
+//    }
 
     public void update(Integer id, JobAnalysisDTOIn dto) {
         updateJobAnalysis(id, dto);
@@ -315,6 +313,8 @@ public class JobAnalysisService {
         jobAnalysis.setMatchScore(result.matchScore());
         jobAnalysis.setMissingSkillsText(result.missingSkills());
         jobAnalysis.setRequiredSkillsText(result.strengths());
+        jobAnalysis.setSummary(result.summary());
+        jobAnalysis.setImprovements(result.weaknesses());
         jobAnalysis.setRecommendations(formatRecommendations(result.summary(), result.weaknesses()));
         jobAnalysis.setSkills(resolveSkillsFromNames(result.skillNames()));
     }
@@ -331,36 +331,36 @@ public class JobAnalysisService {
                 jobAnalysis.getRequiredSkillsText(),
                 jobAnalysis.getMissingSkillsText(),
                 jobAnalysis.getMatchScore(),
-                jobAnalysis.getRecommendations(),
-                mapStudent(jobAnalysis.getStudent()),
-                mapSkills(jobAnalysis.getSkills())
+                jobAnalysis.getSummary(),
+                jobAnalysis.getImprovements(),
+                jobAnalysis.getRecommendations()
         );
     }
 
-    private StudentSummaryDTOOut mapStudent(Student student) {
-        if (student == null) {
-            return null;
-        }
-        return new StudentSummaryDTOOut(
-                student.getId(),
-                student.getFullName(),
-                student.getEmail(),
-                student.getMajor(),
-                student.getTargetRole(),
-                student.getReadinessScore()
-        );
-    }
+    //private StudentSummaryDTOOut mapStudent(Student student) {
+    //    if (student == null) {
+    //        return null;
+    //    }
+    //    return new StudentSummaryDTOOut(
+    //            student.getId(),
+    //            student.getFullName(),
+    //            student.getEmail(),
+    //            student.getMajor(),
+    //            student.getTargetRole(),
+    //            student.getReadinessScore()
+    //    );
+    //}
 
-    private Set<SkillDTOOut> mapSkills(Set<Skill> skills) {
-        Set<SkillDTOOut> skillDTOOuts = new HashSet<>();
-        if (skills == null) {
-            return skillDTOOuts;
-        }
-        for (Skill skill : skills) {
-            skillDTOOuts.add(new SkillDTOOut(skill.getId(), skill.getName(), skill.getCategory()));
-        }
-        return skillDTOOuts;
-    }
+    //private Set<SkillDTOOut> mapSkills(Set<Skill> skills) {
+    //    Set<SkillDTOOut> skillDTOOuts = new HashSet<>();
+    //    if (skills == null) {
+    //        return skillDTOOuts;
+    //    }
+    //    for (Skill skill : skills) {
+    //        skillDTOOuts.add(new SkillDTOOut(skill.getId(), skill.getName(), skill.getCategory()));
+    //    }
+    //    return skillDTOOuts;
+    //}
 
     private record AiJobAnalysisResult(
             String jobTitle,

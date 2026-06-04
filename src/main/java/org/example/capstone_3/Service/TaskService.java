@@ -57,7 +57,9 @@ public class TaskService {
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
         task.setDeadline(dto.getDeadline());
-        task.setStatus("OPEN");
+        task.setPoints(0);
+        task.setDifficulty("EASY");
+        task.setOpen(true);
         task.setCreatedAt(LocalDateTime.now());
 
         task.setLearningGroup(learningGroup);
@@ -93,12 +95,14 @@ public class TaskService {
 
     public TaskDTOOUT convertToDTO(Task task) {
 
+        String status = Boolean.TRUE.equals(task.getOpen()) ? "OPEN" : "CLOSED";
+
         return new TaskDTOOUT(
                 task.getId(),
                 task.getTitle(),
                 task.getDescription(),
                 task.getDeadline(),
-                task.getStatus(),
+                status,
                 task.getCreatedAt()
         );
     }

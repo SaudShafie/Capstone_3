@@ -6,8 +6,6 @@ import org.example.capstone_3.AI.AiService;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.JobAnalysisDTOIn;
 import org.example.capstone_3.DTO.OUT.JobAnalysisDTOOut;
-import org.example.capstone_3.DTO.OUT.SkillDTOOut;
-import org.example.capstone_3.DTO.OUT.StudentSummaryDTOOut;
 import org.example.capstone_3.Model.JobAnalysis;
 import org.example.capstone_3.Model.Skill;
 import org.example.capstone_3.Model.Student;
@@ -86,22 +84,21 @@ public class JobAnalysisService {
         addJobAnalysis(studentId, dto);
     }
 
-    public Object getById(Integer id) {
+    public JobAnalysisDTOOut getById(Integer id) {
         JobAnalysis jobAnalysis = jobAnalysisRepository.findJobAnalysisById(id);
         if (jobAnalysis == null) {
             throw new ApiException("Job analysis with id " + id + " not found");
         }
-//        return toDtoOut(jobAnalysis);"
-        return "";
+        return toDtoOut(jobAnalysis);
     }
 
-//    public List<JobAnalysisDTOOut> getAll() {
-//        List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
-//        for (JobAnalysis jobAnalysis : jobAnalysisRepository.findAll()) {
-//            jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
-//        }
-//        return jobAnalysisDTOOuts;
-//    }
+    public List<JobAnalysisDTOOut> getAll() {
+        List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
+        for (JobAnalysis jobAnalysis : jobAnalysisRepository.findAll()) {
+            jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
+        }
+        return jobAnalysisDTOOuts;
+    }
 
 //    public List<JobAnalysisDTOOut> getByStudentId(Integer studentId) {
 //        Student student = studentRepository.findStudentById(studentId);
@@ -316,6 +313,8 @@ public class JobAnalysisService {
         jobAnalysis.setMatchScore(result.matchScore());
         jobAnalysis.setMissingSkillsText(result.missingSkills());
         jobAnalysis.setRequiredSkillsText(result.strengths());
+        jobAnalysis.setSummary(result.summary());
+        jobAnalysis.setImprovements(result.weaknesses());
         jobAnalysis.setRecommendations(formatRecommendations(result.summary(), result.weaknesses()));
         jobAnalysis.setSkills(resolveSkillsFromNames(result.skillNames()));
     }
@@ -323,45 +322,45 @@ public class JobAnalysisService {
     private String formatRecommendations(String summary, String weaknesses) {
         return "Summary: " + summary + "\n\nWeaknesses: " + weaknesses;
     }
-//JobAnalysisDTOOut return typy
-    private void toDtoOut(JobAnalysis jobAnalysis) {
-//        return new JobAnalysisDTOOut(
-//                jobAnalysis.getId(),
-//                jobAnalysis.getJobTitle(),
-//                jobAnalysis.getJobDescription(),
-//                jobAnalysis.getRequiredSkillsText(),
-//                jobAnalysis.getMissingSkillsText(),
-//                jobAnalysis.getMatchScore(),
-//                jobAnalysis.getRecommendations(),
-//                mapStudent(jobAnalysis.getStudent()),
-//                mapSkills(jobAnalysis.getSkills())
-//        );
-    }
 
-    private StudentSummaryDTOOut mapStudent(Student student) {
-        if (student == null) {
-            return null;
-        }
-        return new StudentSummaryDTOOut(
-                student.getId(),
-                student.getFullName(),
-                student.getEmail(),
-                student.getMajor(),
-                student.getTargetRole(),
-                student.getReadinessScore()
+    private JobAnalysisDTOOut toDtoOut(JobAnalysis jobAnalysis) {
+        return new JobAnalysisDTOOut(
+                jobAnalysis.getId(),
+                jobAnalysis.getJobTitle(),
+                jobAnalysis.getJobDescription(),
+                jobAnalysis.getRequiredSkillsText(),
+                jobAnalysis.getMissingSkillsText(),
+                jobAnalysis.getMatchScore(),
+                jobAnalysis.getSummary(),
+                jobAnalysis.getImprovements(),
+                jobAnalysis.getRecommendations()
         );
     }
 
-    private Set<SkillDTOOut> mapSkills(Set<Skill> skills) {
-        Set<SkillDTOOut> skillDTOOuts = new HashSet<>();
-        if (skills == null) {
-            return skillDTOOuts;
-        }
-        for (Skill skill : skills) {
-            skillDTOOuts.add(new SkillDTOOut(skill.getId(), skill.getName(), skill.getCategory()));
-        }
-        return skillDTOOuts;
-    }
+    //private StudentSummaryDTOOut mapStudent(Student student) {
+    //    if (student == null) {
+    //        return null;
+    //    }
+    //    return new StudentSummaryDTOOut(
+    //            student.getId(),
+    //            student.getFullName(),
+    //            student.getEmail(),
+    //            student.getMajor(),
+    //            student.getTargetRole(),
+    //            student.getReadinessScore()
+    //    );
+    //}
+
+    //private Set<SkillDTOOut> mapSkills(Set<Skill> skills) {
+    //    Set<SkillDTOOut> skillDTOOuts = new HashSet<>();
+    //    if (skills == null) {
+    //        return skillDTOOuts;
+    //    }
+    //    for (Skill skill : skills) {
+    //        skillDTOOuts.add(new SkillDTOOut(skill.getId(), skill.getName(), skill.getCategory()));
+    //    }
+    //    return skillDTOOuts;
+    //}
 
     private record AiJobAnalysisResult(
             String jobTitle,

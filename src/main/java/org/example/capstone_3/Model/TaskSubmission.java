@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Check(constraints = "status='SUBMITTED' or status='NOT SUBMITTED' or status='EVALUATED'")
 public class TaskSubmission {
 
     @Id
@@ -24,11 +23,11 @@ public class TaskSubmission {
     @Column(columnDefinition = "TEXT")
     private String answerText;
 
-    @Column(columnDefinition = "varchar(80) not null")
-    private String status;
+    @Column(columnDefinition = "boolean default false")
+    private Boolean submit;
 
-    @Column(columnDefinition = "int not null")
-    private Integer score;
+    @Column(columnDefinition = "boolean default false")
+    private Boolean correct;
 
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime submittedAt;

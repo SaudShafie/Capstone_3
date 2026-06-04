@@ -35,6 +35,11 @@ public class ChallengeAttemptService {
         Student student = findStudent(student_id);
         Challenge challenge = findChallenge(challenge_id);
 
+        ChallengeAttempt correctAttempt = challengeAttemptRepository.correctAttemptForChallenge(student_id, challenge_id);
+        if(correctAttempt != null){
+            throw new ApiException("Already solved this challenge");
+        }
+
         boolean isCorrect = fetchIsCorrectFromAi(dto.getSubmittedAnswer(), challenge.getCorrectAnswer());
 
         ChallengeAttempt challengeAttempt = new ChallengeAttempt();
@@ -44,7 +49,7 @@ public class ChallengeAttemptService {
         challengeAttempt.setCorrect(isCorrect);
         challengeAttempt.setSubmittedAt(LocalDateTime.now());
 
-        if (isCorrect) {
+        if (isCorrect && challenge.getDeadline().isBefore(LocalDateTime.now())) {
             student.setXp(student.getXp() + challenge.getPoints());
             studentRepository.save(student);
         }
@@ -64,6 +69,7 @@ public class ChallengeAttemptService {
         return challengeAttemptRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
+    //Useless
     public void update(Integer id, ChallengeAttemptDTOIN dto) {
         ChallengeAttempt challengeAttempt = challengeAttemptRepository.findChallengeAttemptById(id);
         if (challengeAttempt == null) {

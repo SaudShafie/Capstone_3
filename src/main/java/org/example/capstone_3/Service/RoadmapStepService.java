@@ -7,9 +7,11 @@ import org.example.capstone_3.DTO.OUT.RoadmapStepDTOOUT;
 import org.example.capstone_3.Model.Roadmap;
 import org.example.capstone_3.Model.RoadmapStep;
 import org.example.capstone_3.Model.Skill;
+import org.example.capstone_3.Model.Student;
 import org.example.capstone_3.Repository.RoadmapRepository;
 import org.example.capstone_3.Repository.RoadmapStepRepository;
 import org.example.capstone_3.Repository.SkillRepository;
+import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,7 @@ public class RoadmapStepService {
     private final RoadmapStepRepository roadmapStepRepository;
     private final RoadmapRepository roadmapRepository;
     private final SkillRepository skillRepository;
+    private final StudentRepository studentRepository;
 
     public List<RoadmapStepDTOOUT> getAllRoadmapSteps() {
         List<RoadmapStepDTOOUT> stepDTO = new ArrayList<>();
@@ -93,11 +96,7 @@ public class RoadmapStepService {
     }
 
     public void completeStep(Integer student_id, Integer roadmap_id, Integer step_id) {
-        Roadmap roadmap = findRoadmap(roadmap_id);
-
-        if (!roadmap.getStudent().getId().equals(student_id)) {
-            throw new ApiException("Roadmap does not belong to this student");
-        }
+        findStudent(student_id);
 
         RoadmapStep step = findRoadmapStep(step_id);
 
@@ -138,11 +137,7 @@ public class RoadmapStepService {
     }
 
     public RoadmapStepDTOOUT getNextStep(Integer student_id, Integer roadmap_id) {
-        Roadmap roadmap = findRoadmap(roadmap_id);
-
-        if (!roadmap.getStudent().getId().equals(student_id)) {
-            throw new ApiException("Roadmap does not belong to this student");
-        }
+        findStudent(student_id);
 
         List<RoadmapStep> allSteps = roadmapStepRepository.findByRoadmapIdOrderByOrderNumber(roadmap_id);
         for (RoadmapStep step : allSteps) {
@@ -152,6 +147,13 @@ public class RoadmapStepService {
         }
 
         throw new ApiException("All steps are completed");
+    }
+
+    private void findStudent(Integer student_id) {
+        Student student = studentRepository.findStudentById(student_id);
+        if (student == null) {
+            throw new ApiException("Student not found");
+        }
     }
 
     private Roadmap findRoadmap(Integer roadmap_id) {

@@ -50,7 +50,7 @@ public class MockInterviewController {
         mockInterviewService.acceptMentorInterview(mentorId, mockInterviewId);
         return ResponseEntity.ok().body(new ApiResponse("Mock interview has been scheduled successfully"));
     }
-
+//
     @PutMapping("/mentor/complete/{mentorId}/{mockInterviewId}")
     public ResponseEntity<?> completeMentorInterview(@PathVariable Integer mentorId,
                                                      @PathVariable Integer mockInterviewId,

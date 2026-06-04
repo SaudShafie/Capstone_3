@@ -19,7 +19,6 @@ import java.util.List;
 public class MentorService {
 
     private final MentorRepository mentorRepository;
-    private final AdminRepository adminRepository;
 
     public void create(MentorDTOIn dto) {
 
@@ -80,24 +79,6 @@ public class MentorService {
         return mentorDTOOuts;
     }
 
-    public void approveMentor(Integer adminId, Integer mentorId) {
-
-        Admin admin = adminRepository.findAdminById(adminId);
-
-        if (admin == null) {
-            throw new ApiException("Admin with id " + adminId + " not found");
-        }
-
-        Mentor mentor = mentorRepository.findMentorById(mentorId);
-
-        if (mentor == null) {
-            throw new ApiException("Mentor with id " + mentorId + " not found");
-        }
-
-        mentor.setAcceptedByAdmin(true);
-
-        mentorRepository.save(mentor);
-    }
 
     public void update(Integer id, MentorDTOIn dto) {
 

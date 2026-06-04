@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiResponse;
 import org.example.capstone_3.DTO.IN.MentorDTOIn;
+import org.example.capstone_3.Repository.AdminRepository;
 import org.example.capstone_3.Service.MentorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,15 +16,12 @@ public class MentorController {
 
     private final MentorService mentorService;
 
+
     @GetMapping("/get")
     public ResponseEntity<?> get() {
         return ResponseEntity.ok(mentorService.getAll());
     }
 
-    @GetMapping("/get/accepted")
-    public ResponseEntity<?> getAcceptedMentors() {
-        return ResponseEntity.ok(mentorService.getAcceptedMentors());
-    }
 
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getMentorById(@PathVariable Integer id) {
@@ -40,12 +38,6 @@ public class MentorController {
     public ResponseEntity<?> updateMentor(@PathVariable Integer id, @RequestBody @Valid MentorDTOIn mentorDTOIn) {
         mentorService.update(id, mentorDTOIn);
         return ResponseEntity.ok().body(new ApiResponse("Mentor has been updated successfully"));
-    }
-
-    @PutMapping("/approve/{adminId}/{mentorId}")
-    public ResponseEntity<?> approveMentor(@PathVariable Integer adminId, @PathVariable Integer mentorId) {
-        mentorService.approveMentor(adminId, mentorId);
-        return ResponseEntity.ok().body(new ApiResponse("Mentor has been approved successfully"));
     }
 
     @DeleteMapping("/delete/{id}")

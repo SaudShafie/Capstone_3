@@ -42,4 +42,12 @@ public class AdminController {
         adminService.delete(id);
         return ResponseEntity.ok().body(new ApiResponse("Admin has been deleted successfully"));
     }
+
+    @PutMapping("/approve/{adminId}/{mentorId}")
+    public ResponseEntity<?> approveMentor(@PathVariable Integer adminId, @PathVariable Integer mentorId) {
+        adminService.approveMentor(adminId, mentorId);
+        return ResponseEntity.ok().body(new ApiResponse("Mentor has been approved successfully"));
+    }
+
+
 }

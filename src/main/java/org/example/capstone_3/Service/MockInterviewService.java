@@ -64,10 +64,6 @@ public class MockInterviewService {
             throw new ApiException("Mentor is not accepted by admin yet");
         }
 
-        if (!Boolean.TRUE.equals(mentor.getAvailable())) {
-            throw new ApiException("Mentor is not available");
-        }
-
         MockInterview mockInterview = new MockInterview();
 
         mockInterview.setInterviewMode("MENTOR");
@@ -221,7 +217,6 @@ public class MockInterviewService {
 
         mockInterview.setStudent(student);
         mockInterview.setMentor(null);
-        mockInterview.setJobAnalysis(null);
 
         mockInterview.setQuestions(generateAiInterviewQuestions(student, dto));
         mockInterview.setStudentAnswers(null);
@@ -534,7 +529,6 @@ public class MockInterviewService {
 
         Integer studentId = mockInterview.getStudent() != null ? mockInterview.getStudent().getId() : null;
         Integer mentorId = mockInterview.getMentor() != null ? mockInterview.getMentor().getId() : null;
-        Integer jobAnalysisId = mockInterview.getJobAnalysis() != null ? mockInterview.getJobAnalysis().getId() : null;
 
         return new MockInterviewDTOOUT(
                 mockInterview.getId(),
@@ -548,8 +542,7 @@ public class MockInterviewService {
                 mockInterview.getUrl(),
                 mockInterview.getCreatedAt(),
                 studentId,
-                mentorId,
-                jobAnalysisId
+                mentorId
         );
     }
 }

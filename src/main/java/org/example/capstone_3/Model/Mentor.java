@@ -45,17 +45,11 @@ public class Mentor {
     @Column(columnDefinition = "text")
     private String bio;
 
-    @Column(columnDefinition = "boolean not null")
-    private Boolean volunteer;
-
     @Column(columnDefinition = "double not null")
     private Double sessionPrice;
 
     @Column(columnDefinition = "double not null")
     private Double rating;
-
-    @Column(columnDefinition = "boolean not null")
-    private Boolean available;
 
     @Column(columnDefinition = "boolean not null")
     private Boolean acceptedByAdmin;

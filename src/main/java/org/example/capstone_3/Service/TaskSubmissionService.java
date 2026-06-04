@@ -62,7 +62,6 @@ public class TaskSubmissionService {
         TaskSubmission submission = new TaskSubmission();
 
         submission.setAnswerText(dto.getAnswerText());
-        submission.setSubmit(true);
         submission.setCorrect(false);
         submission.setSubmittedAt(LocalDateTime.now());
         submission.setAiFeedback(null);
@@ -105,16 +104,12 @@ public class TaskSubmissionService {
             taskTitle = submission.getTask().getTitle();
         }
 
-        String status = Boolean.TRUE.equals(submission.getSubmit()) ? "SUBMITTED" : "PENDING";
-        Integer score = Boolean.TRUE.equals(submission.getCorrect()) ? 100 : 0;
-
         return new TaskSubmissionDTOOUT(
                 submission.getId(),
                 taskTitle,
                 submission.getAnswerText(),
-                status,
                 submission.getAiFeedback(),
-                score,
+                submission.getCorrect(),
                 submission.getSubmittedAt()
         );
     }

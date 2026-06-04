@@ -86,34 +86,35 @@ public class JobAnalysisService {
         addJobAnalysis(studentId, dto);
     }
 
-    public JobAnalysisDTOOut getById(Integer id) {
+    public Object getById(Integer id) {
         JobAnalysis jobAnalysis = jobAnalysisRepository.findJobAnalysisById(id);
         if (jobAnalysis == null) {
             throw new ApiException("Job analysis with id " + id + " not found");
         }
-        return toDtoOut(jobAnalysis);
+//        return toDtoOut(jobAnalysis);"
+        return "";
     }
 
-    public List<JobAnalysisDTOOut> getAll() {
-        List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
-        for (JobAnalysis jobAnalysis : jobAnalysisRepository.findAll()) {
-            jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
-        }
-        return jobAnalysisDTOOuts;
-    }
+//    public List<JobAnalysisDTOOut> getAll() {
+//        List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
+//        for (JobAnalysis jobAnalysis : jobAnalysisRepository.findAll()) {
+//            jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
+//        }
+//        return jobAnalysisDTOOuts;
+//    }
 
-    public List<JobAnalysisDTOOut> getByStudentId(Integer studentId) {
-        Student student = studentRepository.findStudentById(studentId);
-        if (student == null) {
-            throw new ApiException("Student with id " + studentId + " not found");
-        }
-
-        List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
-        for (JobAnalysis jobAnalysis : jobAnalysisRepository.findJobAnalysesByStudentId(studentId)) {
-            jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
-        }
-        return jobAnalysisDTOOuts;
-    }
+//    public List<JobAnalysisDTOOut> getByStudentId(Integer studentId) {
+//        Student student = studentRepository.findStudentById(studentId);
+//        if (student == null) {
+//            throw new ApiException("Student with id " + studentId + " not found");
+//        }
+//
+//        List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
+//        for (JobAnalysis jobAnalysis : jobAnalysisRepository.findJobAnalysesByStudentId(studentId)) {
+//            jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
+//        }
+//        return jobAnalysisDTOOuts;
+//    }
 
     public void update(Integer id, JobAnalysisDTOIn dto) {
         updateJobAnalysis(id, dto);
@@ -322,19 +323,19 @@ public class JobAnalysisService {
     private String formatRecommendations(String summary, String weaknesses) {
         return "Summary: " + summary + "\n\nWeaknesses: " + weaknesses;
     }
-
-    private JobAnalysisDTOOut toDtoOut(JobAnalysis jobAnalysis) {
-        return new JobAnalysisDTOOut(
-                jobAnalysis.getId(),
-                jobAnalysis.getJobTitle(),
-                jobAnalysis.getJobDescription(),
-                jobAnalysis.getRequiredSkillsText(),
-                jobAnalysis.getMissingSkillsText(),
-                jobAnalysis.getMatchScore(),
-                jobAnalysis.getRecommendations(),
-                mapStudent(jobAnalysis.getStudent()),
-                mapSkills(jobAnalysis.getSkills())
-        );
+//JobAnalysisDTOOut return typy
+    private void toDtoOut(JobAnalysis jobAnalysis) {
+//        return new JobAnalysisDTOOut(
+//                jobAnalysis.getId(),
+//                jobAnalysis.getJobTitle(),
+//                jobAnalysis.getJobDescription(),
+//                jobAnalysis.getRequiredSkillsText(),
+//                jobAnalysis.getMissingSkillsText(),
+//                jobAnalysis.getMatchScore(),
+//                jobAnalysis.getRecommendations(),
+//                mapStudent(jobAnalysis.getStudent()),
+//                mapSkills(jobAnalysis.getSkills())
+//        );
     }
 
     private StudentSummaryDTOOut mapStudent(Student student) {

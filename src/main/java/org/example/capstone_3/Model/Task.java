@@ -15,7 +15,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Check(constraints = "status='OPEN' or status='CLOSE'")
+@Check(constraints = "difficulty='EASY' or difficulty='MEDIUM' or difficulty='HARD'")
 public class Task {
 
     @Id
@@ -27,11 +27,17 @@ public class Task {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(columnDefinition = "int not null")
+    private Integer points;
+
+    @Column(columnDefinition = "varchar(80) not null")
+    private String difficulty;
+
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime deadline;
 
-    @Column(columnDefinition = "varchar(80) not null")
-    private String status;
+    @Column(columnDefinition = "boolean default false")
+    private Boolean open;
 
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime createdAt;

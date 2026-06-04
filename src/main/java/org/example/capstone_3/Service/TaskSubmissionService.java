@@ -62,7 +62,7 @@ public class TaskSubmissionService {
         TaskSubmission submission = new TaskSubmission();
 
         submission.setAnswerText(dto.getAnswerText());
-        submission.setCorrect(false);
+        submission.setScore(0);
         submission.setSubmittedAt(LocalDateTime.now());
         submission.setAiFeedback(null);
 
@@ -109,7 +109,7 @@ public class TaskSubmissionService {
                 taskTitle,
                 submission.getAnswerText(),
                 submission.getAiFeedback(),
-                submission.getCorrect(),
+                submission.getScore(),
                 submission.getSubmittedAt()
         );
     }

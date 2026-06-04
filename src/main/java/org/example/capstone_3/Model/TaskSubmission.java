@@ -23,8 +23,8 @@ public class TaskSubmission {
     @Column(columnDefinition = "TEXT")
     private String answerText;
 
-    @Column(columnDefinition = "boolean default false")
-    private Boolean correct;
+    @Column(columnDefinition = "int")
+    private Integer score;
 
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime submittedAt;

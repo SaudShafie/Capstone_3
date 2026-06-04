@@ -12,7 +12,9 @@ import org.example.capstone_3.Repository.ChallengeRepository;
 import org.example.capstone_3.Repository.SkillRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +32,8 @@ public class ChallengeService {
             Pattern.compile("\"points\"\\s*:\\s*(\\d+)");
     private static final Pattern DIFFICULTY_PATTERN =
             Pattern.compile("\"difficulty\"\\s*:\\s*\"(EASY|MEDIUM|HARD)\"");
+    private static final Pattern DEADLINE_DAYS_PATTERN =
+            Pattern.compile("\"deadlineDays\"\\s*:\\s*(\\d+)");
 
     private final ChallengeRepository challengeRepository;
     private final SkillRepository skillRepository;
@@ -112,7 +116,6 @@ public class ChallengeService {
                 challenge.getId(),
                 challenge.getTitle(),
                 challenge.getQuestion(),
-                challenge.getCorrectAnswer(),
                 challenge.getPoints(),
                 challenge.getDifficulty(),
                 skillId
@@ -122,64 +125,161 @@ public class ChallengeService {
     // AI service
 
     private Challenge fetchChallengeFromAi(String skillName) {
-        String prompt = buildChallengePrompt(skillName);
+        List<Challenge> existingChallenges = challengeRepository.findChallengesBySkillName(skillName);
+        String prompt = buildChallengePrompt(skillName, existingChallenges);
         String json = aiService.ask(prompt);
-        return parseChallengeJson(json);
+        Challenge challenge = parseChallengeJson(json);
+        challenge.setPoints(mapPoints(challenge.getDifficulty()));
+
+        return challenge;
     }
 
-    private String buildChallengePrompt(String skillName) {
+    private String buildChallengePrompt(String skillName, List<Challenge> existingChallenges) {
+
+        StringBuilder existingQuestions = new StringBuilder();
+        if (!existingChallenges.isEmpty()) {
+            existingQuestions.append("ALREADY GENERATED QUESTIONS — DO NOT REUSE OR PARAPHRASE:\n");
+            for (int i = 0; i < existingChallenges.size(); i++) {
+                existingQuestions.append(i + 1)
+                        .append(". ")
+                        .append(existingChallenges.get(i).getQuestion())
+                        .append("\n");
+            }
+        }
+
+        String difficulty = randomDifficulty();
+
         return """
-            You are an expert challenge designer for a professional career development platform.
-            Your job is to create high-quality, realistic challenges that test real-world understanding
-            across any field or domain — technical, business, creative, or otherwise.
-            
-            Generate a single challenge for the skill provided below.
-            The challenge must be specific, practical, and appropriate for professionals in that field.
-            
-            Respond with JSON only using this exact shape:
+            You are a strict professional challenge generator for a career development platform.
+
+            Your ONLY job is to generate a single challenge exclusively about the skill: "%s".
+
+            CRITICAL RULES:
+            - The challenge must be 100%% about "%s"
+            - Do NOT generate generic or tutorial-style questions
+            - The question must be a real-world scenario
+            - The challenge must reflect how "%s" is used in real work or business context
+            - The answer must be precise, unambiguous, and objectively correct
+            - The challenge must NOT be reusable across other skills
+            - NEVER repeat or paraphrase previous questions
+
+            %s
+
+            UNIQUENESS RULES:
+            - Generate a completely new challenge
+            - Do NOT reuse any previous scenario, business context, problem type, or solution pattern
+            - Similar meaning counts as duplication even if wording is different
+            - If your generated question is similar to any previous question, discard it and generate a different one
+            - Prefer unexplored use cases of the skill
+            - The generated challenge must be clearly distinguishable from all previous challenges
+
+            Today's date is: %s
+
+            Respond with JSON only:
             {
               "title": "...",
               "question": "...",
               "correctAnswer": "...",
-              "points": 0,
-              "difficulty": "EASY"
+              "difficulty": "%s",
+              "deadlineDays": <integer>
             }
-            
-            Constraints:
-            - title: concise and specific to the skill (max 10 words)
-            - question: a clear, real-world scenario or problem — make it specific to %s and how it is used professionally
-            - correctAnswer: the precise, professional-level answer expected — must be unambiguous
-            - points: integer between 10 and 100 — EASY=10-40, MEDIUM=41-70, HARD=71-100
-            - difficulty: must be exactly one of: EASY, MEDIUM, HARD — choose based on question complexity
-            
-            Rules:
-            - The challenge must reflect actual real-world usage of the skill in a professional context
-            - Never generate trivial, vague, or overly academic questions
-            - The correct answer must be accurate and directly tied to the skill
-            
-            Skill: %s
-            """.formatted(skillName, skillName);
-    }
 
+            FIELD RULES:
+
+            - title:
+              * max 10 words
+              * must include "%s"
+
+            - question:
+              * max 60 words
+              * must require direct "%s" expertise
+              * must be a real-world scenario, not a tutorial
+              * must test skill-specific knowledge
+              * must clearly reflect the selected difficulty level
+
+            - correctAnswer:
+              * max 40 words
+              * must be precise and deterministic
+              * must directly solve the scenario
+              * avoid generic answers
+              * for technical skills, provide the technically correct solution or recommendation
+              * for soft skills, provide the most professional and effective response
+
+            - difficulty:
+              * MUST be exactly: %s
+              * Do NOT change or override it
+              * EASY: beginner level, fundamental concepts, minimal experience required
+              * MEDIUM: intermediate level, practical application, moderate experience required
+              * HARD: expert level, advanced scenarios, significant experience required
+              * The generated question MUST strictly match the selected difficulty level
+
+            - deadlineDays:
+              * integer only (2–14)
+              * EASY → 2–5 days
+              * MEDIUM → 4–9 days
+              * HARD → 7–14 days
+
+            VALIDATION RULES:
+            - Must NOT be generic or reusable
+            - Must require skill "%s"
+            - Scenario complexity must match difficulty level
+            - OUTPUT MUST BE STRICT JSON ONLY
+            """.formatted(
+                skillName,
+                skillName,
+                skillName,
+                existingQuestions.toString(),
+                LocalDateTime.now(),
+                difficulty,
+                skillName,
+                skillName,
+                difficulty,
+                skillName
+        );
+    }
     private Challenge parseChallengeJson(String json) {
+
         Matcher titleMatcher = TITLE_PATTERN.matcher(json);
         Matcher questionMatcher = QUESTION_PATTERN.matcher(json);
         Matcher correctAnswerMatcher = CORRECT_ANSWER_PATTERN.matcher(json);
-        Matcher pointsMatcher = POINTS_PATTERN.matcher(json);
         Matcher difficultyMatcher = DIFFICULTY_PATTERN.matcher(json);
+        Matcher deadlineDaysMatcher = DEADLINE_DAYS_PATTERN.matcher(json);
 
         if (!titleMatcher.find()) throw new AiException("AI response did not contain title.");
         if (!questionMatcher.find()) throw new AiException("AI response did not contain question.");
         if (!correctAnswerMatcher.find()) throw new AiException("AI response did not contain correctAnswer.");
-        if (!pointsMatcher.find()) throw new AiException("AI response did not contain points.");
         if (!difficultyMatcher.find()) throw new AiException("AI response did not contain difficulty.");
+        if (!deadlineDaysMatcher.find()) throw new AiException("AI response did not contain deadlineDays.");
+
+        int deadlineDays = Integer.parseInt(deadlineDaysMatcher.group(1));
+
+        if (deadlineDays < 2 || deadlineDays > 14) {
+            throw new AiException("AI generated invalid deadlineDays (must be 2–14).");
+        }
 
         Challenge challenge = new Challenge();
+
         challenge.setTitle(titleMatcher.group(1));
         challenge.setQuestion(questionMatcher.group(1));
         challenge.setCorrectAnswer(correctAnswerMatcher.group(1));
-        challenge.setPoints(Integer.parseInt(pointsMatcher.group(1)));
         challenge.setDifficulty(difficultyMatcher.group(1));
+
+        challenge.setDeadline(LocalDateTime.now().plusDays(deadlineDays));
+
         return challenge;
+    }
+
+    private int mapPoints(String difficulty) {
+        return switch (difficulty) {
+            case "EASY" -> 10;
+            case "MEDIUM" -> 20;
+            case "HARD" -> 30;
+            default -> throw new AiException("Invalid difficulty: " + difficulty);
+        };
+    }
+
+    private String randomDifficulty() {
+        String[] levels = {"EASY", "MEDIUM", "HARD"};
+        return levels[new Random().nextInt(levels.length)];
     }
 }

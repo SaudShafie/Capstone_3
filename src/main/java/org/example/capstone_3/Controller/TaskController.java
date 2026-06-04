@@ -27,8 +27,8 @@ public class TaskController {
     }
 
     @PostMapping("/add/{learningGroupId}")
-    public ResponseEntity<?> add(@PathVariable Integer learningGroupId, @RequestBody @Valid TaskDTOIN dto) {
-        taskService.addTask(learningGroupId, dto);
+    public ResponseEntity<?> add(@PathVariable Integer learningGroupId) {
+        taskService.addTask(learningGroupId);
         return ResponseEntity.ok(new ApiResponse("Task created successfully"));
     }
 

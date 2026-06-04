@@ -140,9 +140,7 @@ public class ChallengeAttemptService {
                 challengeAttempt.getId(),
                 challengeAttempt.getSubmittedAnswer(),
                 challengeAttempt.getCorrect(),
-                challengeAttempt.getSubmittedAt(),
-                studentId,
-                challengeId
+                challengeAttempt.getSubmittedAt()
         );
     }
 

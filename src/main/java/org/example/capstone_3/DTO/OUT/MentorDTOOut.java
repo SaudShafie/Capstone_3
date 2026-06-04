@@ -23,8 +23,6 @@ public class MentorDTOOut {
 
     private String bio;
 
-    private Boolean volunteer;
-
     private Double sessionPrice;
 
     private Double rating;

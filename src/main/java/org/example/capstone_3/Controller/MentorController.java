@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiResponse;
 import org.example.capstone_3.DTO.IN.MentorDTOIn;
 import org.example.capstone_3.Service.MentorService;
+import org.example.capstone_3.Service.ReviewService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class MentorController {
 
     private final MentorService mentorService;
+    private final ReviewService reviewService;
 
     @GetMapping("/get")
     public ResponseEntity<?> getApprovedMentors() {
@@ -23,6 +25,11 @@ public class MentorController {
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getApprovedMentorById(@PathVariable Integer id) {
         return ResponseEntity.ok(mentorService.getApprovedById(id));
+    }
+
+    @GetMapping("/get/{id}/reviews")
+    public ResponseEntity<?> getMentorReviews(@PathVariable Integer id) {
+        return ResponseEntity.ok(reviewService.getReviewsByMentorId(id));
     }
 
     @PostMapping("/add")

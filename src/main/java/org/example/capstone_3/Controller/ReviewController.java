@@ -35,8 +35,7 @@ public class ReviewController {
                                         @PathVariable Integer mentorId,
                                         @PathVariable Integer mockInterviewId,
                                         @RequestBody @Valid ReviewDTOIN reviewDTOIN) {
-        reviewService.create(studentId, mentorId, mockInterviewId, reviewDTOIN);
-        return ResponseEntity.ok().body(new ApiResponse("Review has been saved successfully"));
+        return ResponseEntity.ok(reviewService.create(studentId, mentorId, mockInterviewId, reviewDTOIN));
     }
 
     @PutMapping("/update/{id}")

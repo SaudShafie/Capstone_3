@@ -22,7 +22,7 @@ public class MockInterviewReportController {
     public ResponseEntity<?> getMockInterviewReportById(@PathVariable Integer id) {
         return ResponseEntity.ok(mockInterviewReportService.getById(id));
     }
-
+// m id
     @PostMapping("/add/{mockInterviewId}")
     public ResponseEntity<?> saveMockInterviewReport(@PathVariable Integer mockInterviewId) {
         mockInterviewReportService.create(mockInterviewId);

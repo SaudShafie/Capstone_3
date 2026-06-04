@@ -5,7 +5,9 @@ import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.AdminDTOIn;
 import org.example.capstone_3.DTO.OUT.AdminDTOOut;
 import org.example.capstone_3.Model.Admin;
+import org.example.capstone_3.Model.Mentor;
 import org.example.capstone_3.Repository.AdminRepository;
+import org.example.capstone_3.Repository.MentorRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,6 +19,8 @@ import java.util.List;
 public class AdminService {
 
     private final AdminRepository adminRepository;
+    private final MentorRepository mentorRepository;
+
 
     public void create(AdminDTOIn dto) {
 
@@ -85,6 +89,27 @@ public class AdminService {
 
         adminRepository.delete(admin);
     }
+
+    public void approveMentor(Integer adminId, Integer mentorId) {
+
+        Admin admin = adminRepository.findAdminById(adminId);
+
+        if (admin == null) {
+            throw new ApiException("Admin with id " + adminId + " not found");
+        }
+
+        Mentor mentor = mentorRepository.findMentorById(mentorId);
+
+        if (mentor == null) {
+            throw new ApiException("Mentor with id " + mentorId + " not found");
+        }
+
+        mentor.setAcceptedByAdmin(true);
+
+        mentorRepository.save(mentor);
+    }
+
+
 
     private void applyDto(Admin admin, AdminDTOIn dto) {
         admin.setFullName(dto.getFullName());

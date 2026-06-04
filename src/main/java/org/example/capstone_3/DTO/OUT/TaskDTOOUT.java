@@ -18,7 +18,7 @@ public class TaskDTOOUT {
 
     private LocalDateTime deadline;
 
-    private String status;
+    private boolean open;
 
     private LocalDateTime createdAt;
 }

@@ -57,7 +57,7 @@ public class TaskService {
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
         task.setDeadline(dto.getDeadline());
-        task.setStatus("OPEN");
+        task.setOpen(true);
         task.setCreatedAt(LocalDateTime.now());
 
         task.setLearningGroup(learningGroup);
@@ -98,7 +98,7 @@ public class TaskService {
                 task.getTitle(),
                 task.getDescription(),
                 task.getDeadline(),
-                task.getStatus(),
+                task.getOpen(),
                 task.getCreatedAt()
         );
     }

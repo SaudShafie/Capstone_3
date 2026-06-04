@@ -24,9 +24,6 @@ public class TaskSubmission {
     private String answerText;
 
     @Column(columnDefinition = "boolean default false")
-    private Boolean submit;
-
-    @Column(columnDefinition = "boolean default false")
     private Boolean correct;
 
     @Column(columnDefinition = "datetime not null")

@@ -17,7 +17,5 @@ public interface MentorRepository extends JpaRepository<Mentor, Integer> {
 
     List<Mentor> findMentorsByJobTitleContainingIgnoreCase(String jobTitle);
 
-    List<Mentor> findMentorsByAvailable(Boolean available);
-
     List<Mentor> findMentorsByAcceptedByAdmin(Boolean acceptedByAdmin);
 }

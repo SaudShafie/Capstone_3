@@ -32,11 +32,10 @@ public class MentorService {
         applyDto(mentor, dto);
 
         mentor.setRating(0.0);
-        mentor.setAvailable(true);
         mentor.setAcceptedByAdmin(false);
         mentor.setCreatedAt(LocalDateTime.now());
 
-        if (Boolean.TRUE.equals(mentor.getVolunteer())) {
+        if (Boolean.TRUE.equals(dto.getVolunteer())) {
             mentor.setSessionPrice(0.0);
         }
 
@@ -115,7 +114,7 @@ public class MentorService {
 
         applyDto(mentor, dto);
 
-        if (Boolean.TRUE.equals(mentor.getVolunteer())) {
+        if (Boolean.TRUE.equals(dto.getVolunteer())) {
             mentor.setSessionPrice(0.0);
         }
 
@@ -142,11 +141,11 @@ public class MentorService {
         mentor.setSpecialization(dto.getSpecialization());
         mentor.setYearsExperience(dto.getYearsExperience());
         mentor.setBio(dto.getBio());
-        mentor.setVolunteer(dto.getVolunteer());
         mentor.setSessionPrice(dto.getSessionPrice());
     }
 
     private MentorDTOOut toDtoOut(Mentor mentor) {
+        Boolean volunteer = mentor.getSessionPrice() != null && mentor.getSessionPrice() == 0.0;
         return new MentorDTOOut(
                 mentor.getId(),
                 mentor.getFullName(),
@@ -156,10 +155,9 @@ public class MentorService {
                 mentor.getSpecialization(),
                 mentor.getYearsExperience(),
                 mentor.getBio(),
-                mentor.getVolunteer(),
+                volunteer,
                 mentor.getSessionPrice(),
                 mentor.getRating(),
-                mentor.getAvailable(),
                 mentor.getAcceptedByAdmin()
         );
     }

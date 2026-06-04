@@ -23,5 +23,4 @@ public class MockInterviewDTOOUT {
     private LocalDateTime createdAt;
     private Integer studentId;
     private Integer mentorId;
-    private Integer jobAnalysisId;
 }

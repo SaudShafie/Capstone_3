@@ -45,7 +45,12 @@ public class Student {
     @Column(columnDefinition = "varchar(255)")
     private String githubUrl;
 
-    // cv url
+    @Column(columnDefinition = "text")
+    private String githubText;
+
+    @Column(columnDefinition = "varchar(2048)")
+    private String cvUrl;
+
     @Column(columnDefinition = "text")
     private String cvText;
 

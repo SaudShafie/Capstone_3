@@ -6,6 +6,7 @@ import org.example.capstone_3.AI.AiService;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.JobAnalysisDTOIn;
 import org.example.capstone_3.DTO.OUT.JobAnalysisDTOOut;
+import org.example.capstone_3.DTO.OUT.SkillDTOOut;
 import org.example.capstone_3.Model.JobAnalysis;
 import org.example.capstone_3.Model.Skill;
 import org.example.capstone_3.Model.Student;
@@ -13,6 +14,7 @@ import org.example.capstone_3.Repository.JobAnalysisRepository;
 import org.example.capstone_3.Repository.SkillRepository;
 import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,7 +44,8 @@ public class JobAnalysisService {
     /**
      * Add job analysis: load student → AI analysis → save JobAnalysis.
      */
-    public void addJobAnalysis(Integer studentId, JobAnalysisDTOIn dto) {
+    @Transactional
+    public JobAnalysisDTOOut addJobAnalysis(Integer studentId, JobAnalysisDTOIn dto) {
         Student student = studentRepository.findStudentById(studentId);
         if (student == null) {
             throw new ApiException("Student with id " + studentId + " not found");
@@ -53,38 +56,49 @@ public class JobAnalysisService {
         JobAnalysis jobAnalysis = new JobAnalysis();
         jobAnalysis.setJobDescription(dto.getJobDescription());
         applyAiResult(jobAnalysis, aiResult);
+        jobAnalysis.setReadinessScore(student.getReadinessScore());
         jobAnalysis.setStudent(student);
         jobAnalysis.setCreatedAt(LocalDateTime.now());
 
-        jobAnalysisRepository.save(jobAnalysis);
+        jobAnalysis = jobAnalysisRepository.save(jobAnalysis);
+        return toDtoOut(jobAnalysis);
     }
 
     /**
      * Update job analysis: load record + student → AI analysis → save.
      */
-    public void updateJobAnalysis(Integer id, JobAnalysisDTOIn dto) {
+    @Transactional
+    public JobAnalysisDTOOut updateJobAnalysis(Integer id, JobAnalysisDTOIn dto) {
         JobAnalysis jobAnalysis = jobAnalysisRepository.findJobAnalysisById(id);
         if (jobAnalysis == null) {
             throw new ApiException("Job analysis with id " + id + " not found");
         }
 
-        Student student = jobAnalysis.getStudent();
-        if (student == null) {
+        Student linkedStudent = jobAnalysis.getStudent();
+        if (linkedStudent == null) {
             throw new ApiException("Student not found for job analysis " + id);
+        }
+
+        Student student = studentRepository.findStudentById(linkedStudent.getId());
+        if (student == null) {
+            throw new ApiException("Student with id " + linkedStudent.getId() + " not found");
         }
 
         AiJobAnalysisResult aiResult = fetchJobAnalysisFromAi(student, dto.getJobDescription());
 
         jobAnalysis.setJobDescription(dto.getJobDescription());
         applyAiResult(jobAnalysis, aiResult);
+        jobAnalysis.setReadinessScore(student.getReadinessScore());
 
-        jobAnalysisRepository.save(jobAnalysis);
+        jobAnalysis = jobAnalysisRepository.save(jobAnalysis);
+        return toDtoOut(jobAnalysis);
     }
 
-    public void create(Integer studentId, JobAnalysisDTOIn dto) {
-        addJobAnalysis(studentId, dto);
+    public JobAnalysisDTOOut create(Integer studentId, JobAnalysisDTOIn dto) {
+        return addJobAnalysis(studentId, dto);
     }
 
+    @Transactional(readOnly = true)
     public JobAnalysisDTOOut getById(Integer id) {
         JobAnalysis jobAnalysis = jobAnalysisRepository.findJobAnalysisById(id);
         if (jobAnalysis == null) {
@@ -93,29 +107,22 @@ public class JobAnalysisService {
         return toDtoOut(jobAnalysis);
     }
 
-    public List<JobAnalysisDTOOut> getAll() {
+    @Transactional(readOnly = true)
+    public List<JobAnalysisDTOOut> getByStudentId(Integer studentId) {
+        Student student = studentRepository.findStudentById(studentId);
+        if (student == null) {
+            throw new ApiException("Student with id " + studentId + " not found");
+        }
+
         List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
-        for (JobAnalysis jobAnalysis : jobAnalysisRepository.findAll()) {
+        for (JobAnalysis jobAnalysis : jobAnalysisRepository.findJobAnalysesByStudentId(studentId)) {
             jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
         }
         return jobAnalysisDTOOuts;
     }
 
-   public List<JobAnalysisDTOOut> getByStudentId(Integer studentId) {
-       Student student = studentRepository.findStudentById(studentId);
-       if (student == null) {
-           throw new ApiException("Student with id " + studentId + " not found");
-       }
-
-       List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
-       for (JobAnalysis jobAnalysis : jobAnalysisRepository.findJobAnalysesByStudentId(studentId)) {
-           jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
-       }
-       return jobAnalysisDTOOuts;
-   }
-
-    public void update(Integer id, JobAnalysisDTOIn dto) {
-        updateJobAnalysis(id, dto);
+    public JobAnalysisDTOOut update(Integer id, JobAnalysisDTOIn dto) {
+        return updateJobAnalysis(id, dto);
     }
 
     public void delete(Integer id) {
@@ -137,9 +144,12 @@ public class JobAnalysisService {
         String availableSkillNames = formatAvailableSkills();
         String cv = studentProfilePromptHelper.formatCvForPrompt(student);
         String github = studentProfilePromptHelper.formatGithubForPrompt(student);
+        String profileGuidance = buildProfileGuidanceForAi(cv, github);
 
         return """
                 You are a career coach. Compare the student profile to the job description.
+                
+                %s
                 
                 Respond with JSON only using this exact shape:
                 {
@@ -149,9 +159,12 @@ public class JobAnalysisService {
                   "summary": "2-4 sentence overview of fit",
                   "strengths": "student strengths relative to this job",
                   "weaknesses": "gaps or weaknesses relative to this job",
+                  "recommendations": "3-5 actionable steps to improve fit for this job",
                   "skills": ["SkillName1", "SkillName2"]
                 }
                 matchScore must be an integer from 0 to 100.
+                The student's readinessScore (below) was already calculated for their target role using CV and profile data.
+                Use it as a baseline for overall preparedness, but matchScore must reflect fit for THIS job posting specifically.
                 skills must be a JSON array of skill names picked ONLY from the available skills list below.
                 Do NOT invent new skill names. If none apply, return an empty array [].
                 Include skills the student has that match the job, and/or key job skills that exist in the available list.
@@ -164,6 +177,7 @@ public class JobAnalysisService {
                 Major: %s
                 Target role: %s
                 Years of experience: %s
+                Readiness score (0-100): %s
                 Student skills: %s
                 
                 --- CV ---
@@ -175,16 +189,72 @@ public class JobAnalysisService {
                 --- Job description ---
                 %s
                 """.formatted(
+                profileGuidance,
                 availableSkillNames,
                 student.getFullName(),
                 student.getMajor(),
                 student.getTargetRole(),
                 student.getYearsExperience(),
+                formatReadinessScore(student),
                 studentSkillNames,
                 cv,
                 github,
                 jobDescription
         );
+    }
+
+    private String buildProfileGuidanceForAi(String cv, String github) {
+        boolean cvMissing = isEmptyProfileSection(cv);
+        boolean githubMissing = isEmptyProfileSection(github);
+
+        if (!cvMissing && !githubMissing) {
+            return """
+                    Profile completeness: ADEQUATE (CV and GitHub text are present).
+                    Be rigorous and evidence-based. Do not inflate scores without support from the profile.
+                    """;
+        }
+
+        StringBuilder guidance = new StringBuilder();
+        guidance.append("""
+                Profile completeness: WEAK — critical evidence is missing.
+                You must treat this as an incomplete profile and be noticeably harsher and more skeptical than usual.
+                Do not invent projects, tools, or experience that are not explicitly stated below.
+                """);
+
+        if (cvMissing) {
+            guidance.append("- CV: NOT PROVIDED. Do not assume resume content, work history, or certifications.\n");
+        }
+        if (githubMissing) {
+            guidance.append("- GitHub: NOT PROVIDED. Do not assume repositories, languages, or open-source work.\n");
+        }
+
+        guidance.append("""
+                
+                Required tone and scoring when profile is weak:
+                - In summary, explicitly say the profile is incomplete and the assessment has low confidence.
+                - Use direct, critical language in weaknesses (no sugarcoating).
+                - matchScore must be conservative: typically 15-40 unless listed student skills alone clearly match the job.
+                - If both CV and GitHub are missing, matchScore must not exceed 35 unless the gap is undeniable from skills text only.
+                - recommendations must start with providing a CV and/or GitHub, then job-specific steps.
+                """);
+
+        return guidance.toString().trim();
+    }
+
+    private boolean isEmptyProfileSection(String section) {
+        if (section == null || section.isBlank()) {
+            return true;
+        }
+        String normalized = section.trim().toLowerCase();
+        return normalized.startsWith("(no ")
+                || normalized.contains("not provided");
+    }
+
+    private String formatReadinessScore(Student student) {
+        if (student.getReadinessScore() == null) {
+            return "0 (not yet calculated — treat as unknown baseline)";
+        }
+        return String.valueOf(student.getReadinessScore());
     }
 
     private String formatAvailableSkills() {
@@ -212,10 +282,12 @@ public class JobAnalysisService {
         String summary = extractJsonString(json, "summary");
         String strengths = extractJsonString(json, "strengths");
         String weaknesses = extractJsonString(json, "weaknesses");
+        String recommendations = extractJsonString(json, "recommendations");
         String jobTitle = extractJsonString(json, "jobTitle");
         List<String> skillNames = extractJsonStringArray(json, "skills");
 
-        if (missingSkills == null || summary == null || strengths == null || weaknesses == null) {
+        if (missingSkills == null || summary == null || strengths == null || weaknesses == null
+                || recommendations == null) {
             throw new AiException("AI response is missing required job analysis fields.");
         }
 
@@ -226,6 +298,7 @@ public class JobAnalysisService {
                 summary,
                 strengths,
                 weaknesses,
+                recommendations,
                 skillNames
         );
     }
@@ -260,11 +333,26 @@ public class JobAnalysisService {
 
         Set<Skill> skills = new HashSet<>();
         for (String name : skillNames) {
-            Skill skill = skillsInDatabase.get(name.trim().toLowerCase());
-            if (skill != null) {
-                skills.add(skill);
+            String trimmed = name.trim();
+            if (trimmed.isEmpty() || trimmed.length() > 50) {
+                continue;
             }
-            // Names not in the database are ignored — we never create new Skill rows here.
+
+            String key = trimmed.toLowerCase();
+            Skill skill = skillsInDatabase.get(key);
+            if (skill == null) {
+                Skill existing = skillRepository.findSkillByName(trimmed);
+                if (existing != null) {
+                    skill = existing;
+                } else {
+                    Skill newSkill = new Skill();
+                    newSkill.setName(trimmed);
+                    newSkill.setCategory("Other");
+                    skill = skillRepository.save(newSkill);
+                }
+                skillsInDatabase.put(key, skill);
+            }
+            skills.add(skill);
         }
         return skills;
     }
@@ -316,55 +404,42 @@ public class JobAnalysisService {
         jobAnalysis.setJobTitle(result.jobTitle());
         jobAnalysis.setMatchScore(result.matchScore());
         jobAnalysis.setMissingSkillsText(result.missingSkills());
-        jobAnalysis.setRequiredSkillsText(result.strengths());
+        jobAnalysis.setStrengths(result.strengths());
         jobAnalysis.setSummary(result.summary());
-        jobAnalysis.setImprovements(result.weaknesses());
-        jobAnalysis.setRecommendations(formatRecommendations(result.summary(), result.weaknesses()));
+        jobAnalysis.setWeaknesses(result.weaknesses());
+        jobAnalysis.setRecommendations(result.recommendations());
         jobAnalysis.setSkills(resolveSkillsFromNames(result.skillNames()));
     }
 
-    private String formatRecommendations(String summary, String weaknesses) {
-        return "Summary: " + summary + "\n\nWeaknesses: " + weaknesses;
-    }
-
     private JobAnalysisDTOOut toDtoOut(JobAnalysis jobAnalysis) {
+        Integer studentId = jobAnalysis.getStudent() != null ? jobAnalysis.getStudent().getId() : null;
         return new JobAnalysisDTOOut(
                 jobAnalysis.getId(),
+                studentId,
                 jobAnalysis.getJobTitle(),
                 jobAnalysis.getJobDescription(),
-                jobAnalysis.getRequiredSkillsText(),
+                jobAnalysis.getStrengths(),
                 jobAnalysis.getMissingSkillsText(),
                 jobAnalysis.getMatchScore(),
+                jobAnalysis.getReadinessScore(),
                 jobAnalysis.getSummary(),
-                jobAnalysis.getImprovements(),
-                jobAnalysis.getRecommendations()
+                jobAnalysis.getWeaknesses(),
+                jobAnalysis.getRecommendations(),
+                jobAnalysis.getCreatedAt(),
+                mapSkills(jobAnalysis.getSkills())
         );
     }
 
-    //private StudentSummaryDTOOut mapStudent(Student student) {
-    //    if (student == null) {
-    //        return null;
-    //    }
-    //    return new StudentSummaryDTOOut(
-    //            student.getId(),
-    //            student.getFullName(),
-    //            student.getEmail(),
-    //            student.getMajor(),
-    //            student.getTargetRole(),
-    //            student.getReadinessScore()
-    //    );
-    //}
-
-    //private Set<SkillDTOOut> mapSkills(Set<Skill> skills) {
-    //    Set<SkillDTOOut> skillDTOOuts = new HashSet<>();
-    //    if (skills == null) {
-    //        return skillDTOOuts;
-    //    }
-    //    for (Skill skill : skills) {
-    //        skillDTOOuts.add(new SkillDTOOut(skill.getId(), skill.getName(), skill.getCategory()));
-    //    }
-    //    return skillDTOOuts;
-    //}
+    private Set<SkillDTOOut> mapSkills(Set<Skill> skills) {
+        Set<SkillDTOOut> skillDTOOuts = new HashSet<>();
+        if (skills == null) {
+            return skillDTOOuts;
+        }
+        for (Skill skill : skills) {
+            skillDTOOuts.add(new SkillDTOOut(skill.getId(), skill.getName(), skill.getCategory()));
+        }
+        return skillDTOOuts;
+    }
 
     private record AiJobAnalysisResult(
             String jobTitle,
@@ -373,6 +448,7 @@ public class JobAnalysisService {
             String summary,
             String strengths,
             String weaknesses,
+            String recommendations,
             List<String> skillNames
     ) {
     }

@@ -155,7 +155,6 @@ public class MentorService {
                 mentor.getSpecialization(),
                 mentor.getYearsExperience(),
                 mentor.getBio(),
-                volunteer,
                 mentor.getSessionPrice(),
                 mentor.getRating(),
                 mentor.getAcceptedByAdmin()

@@ -134,8 +134,6 @@ public class ChallengeAttemptService {
     }
 
     private ChallengeAttemptDTOOUT toDtoOut(ChallengeAttempt challengeAttempt) {
-        Integer studentId = challengeAttempt.getStudent() != null ? challengeAttempt.getStudent().getId() : null;
-        Integer challengeId = challengeAttempt.getChallenge() != null ? challengeAttempt.getChallenge().getId() : null;
         return new ChallengeAttemptDTOOUT(
                 challengeAttempt.getId(),
                 challengeAttempt.getSubmittedAnswer(),

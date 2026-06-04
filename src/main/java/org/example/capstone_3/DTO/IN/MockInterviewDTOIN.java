@@ -1,6 +1,7 @@
 package org.example.capstone_3.DTO.IN;
 
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -15,12 +16,14 @@ public class MockInterviewDTOIN {
     @NotBlank(message = "Interview type is required")
     private String interviewType;
 
-    @NotBlank(message = "Interview description is required")
+    @NotBlank(message = "Description is required")
     private String description;
 
     @NotNull(message = "Scheduled date and time are required")
     @Future(message = "Scheduled date must be in the future")
     private LocalDateTime scheduledAt;
 
-    private String url;
+    @NotNull(message = "Duration is required")
+    @Min(value = 15, message = "Duration must be at least 15 minutes")
+    private Integer durationMinutes;
 }

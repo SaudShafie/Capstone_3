@@ -16,12 +16,17 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Check(constraints = "status='PENDING' or status='SCHEDULE' or status='COMPLETE' or status='REJECT' or status='CANCEL'")
+@Check(constraints =
+        "(status='PENDING' or status='SCHEDULE' or status='COMPLETE' or status='REJECT' or status='CANCEL') " +
+        "and (interview_mode='MENTOR' or interview_mode='AI')")
 public class MockInterview {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(name = "interview_mode", columnDefinition = "varchar(20) not null")
+    private String interviewMode; // MENTOR or AI
 
     @Column(columnDefinition = "varchar(80) not null")
     private String interviewType;
@@ -31,6 +36,9 @@ public class MockInterview {
 
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime scheduledAt;
+
+    @Column(columnDefinition = "int not null")
+    private Integer durationMinutes;
 
     @Column(columnDefinition = "varchar(80) not null")
     private String status;
@@ -49,6 +57,12 @@ public class MockInterview {
 
     @Column(columnDefinition = "TEXT")
     private String url;
+
+    @Column(columnDefinition = "varchar(50)")
+    private String meetingProvider; // ZOOM or GOOGLE_MEET
+
+    @Column(columnDefinition = "varchar(255)")
+    private String externalMeetingId;
 
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime createdAt;

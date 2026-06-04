@@ -36,6 +36,12 @@ public class JobAnalysis {
     @Column(columnDefinition = "int not null")
     private Integer matchScore;
 
+    @Column(columnDefinition = "text not null")
+    private String summary;
+
+    @Column(columnDefinition = "text not null")
+    private String improvements;
+
     @Column(columnDefinition = "text")
     private String recommendations;
 
@@ -53,10 +59,5 @@ public class JobAnalysis {
             inverseJoinColumns = @JoinColumn(name = "skill_id")
     )
     private Set<Skill> skills;
-
-    @OneToOne(mappedBy = "jobAnalysis", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private JobAnalysisReport jobAnalysisReport;
-
 
 }

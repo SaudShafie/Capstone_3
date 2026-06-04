@@ -34,10 +34,10 @@ public class MockInterview {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(columnDefinition = "datetime not null")
+    @Column(columnDefinition = "datetime")
     private LocalDateTime scheduledAt;
 
-    @Column(columnDefinition = "int not null")
+    @Column(columnDefinition = "int")
     private Integer durationMinutes;
 
     @Column(columnDefinition = "varchar(80) not null")
@@ -74,10 +74,6 @@ public class MockInterview {
     @ManyToOne
     @JoinColumn(name = "mentor_id")
     private Mentor mentor;
-
-    @ManyToOne
-    @JoinColumn(name = "job_analysis_id")
-    private JobAnalysis jobAnalysis;
 
     @OneToOne(mappedBy = "mockInterview", cascade = CascadeType.ALL)
     @JsonIgnore

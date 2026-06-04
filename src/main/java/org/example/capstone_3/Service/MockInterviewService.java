@@ -39,6 +39,7 @@ public class MockInterviewService {
     private final StudentRepository studentRepository;
     private final MentorRepository mentorRepository;
     private final AiService aiService;
+    private final StudentProfilePromptHelper studentProfilePromptHelper;
     private final MeetingService meetingService;
     private final EmailService emailService;
 
@@ -331,9 +332,8 @@ public class MockInterviewService {
 
     private String generateMentorQuestions(Student student, Mentor mentor, MockInterviewDTOIN dto) {
 
-        String cv = student.getCvText() == null || student.getCvText().isBlank()
-                ? "(no CV provided)"
-                : student.getCvText();
+        String cv = studentProfilePromptHelper.formatCvForPrompt(student);
+        String github = studentProfilePromptHelper.formatGithubForPrompt(student);
 
         String prompt = """
                 You are helping a mentor prepare for a mock interview.
@@ -358,6 +358,9 @@ public class MockInterviewService {
                 
                 Student CV:
                 %s
+                
+                Student GitHub:
+                %s
                 """.formatted(
                 dto.getInterviewType(),
                 dto.getDescription(),
@@ -369,7 +372,8 @@ public class MockInterviewService {
                 mentor.getJobTitle(),
                 mentor.getSpecialization(),
                 mentor.getYearsExperience(),
-                cv
+                cv,
+                github
         );
 
         String json = aiService.ask(prompt);
@@ -379,9 +383,8 @@ public class MockInterviewService {
 
     private String generateAiInterviewQuestions(Student student, AiMockInterviewDTOIN dto) {
 
-        String cv = student.getCvText() == null || student.getCvText().isBlank()
-                ? "(no CV provided)"
-                : student.getCvText();
+        String cv = studentProfilePromptHelper.formatCvForPrompt(student);
+        String github = studentProfilePromptHelper.formatGithubForPrompt(student);
 
         String prompt = """
                 You are an AI mock interviewer.
@@ -403,6 +406,9 @@ public class MockInterviewService {
                 
                 Student CV:
                 %s
+                
+                Student GitHub:
+                %s
                 """.formatted(
                 dto.getInterviewType(),
                 dto.getDescription(),
@@ -411,7 +417,8 @@ public class MockInterviewService {
                 student.getTargetRole(),
                 student.getYearsExperience(),
                 student.getReadinessScore(),
-                cv
+                cv,
+                github
         );
 
         String json = aiService.ask(prompt);

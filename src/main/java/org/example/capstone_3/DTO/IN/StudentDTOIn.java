@@ -52,6 +52,10 @@ public class StudentDTOIn {
     )
     private String githubUrl;
 
-    @Size(max = 10000, message = "CV text must not exceed 10000 characters")
-    private String cvText;
+    @Pattern(
+            regexp = "^(https?://).+$|^$",
+            message = "CV URL must be a valid http(s) link to a PDF"
+    )
+    @Size(max = 2048, message = "CV URL must not exceed 2048 characters")
+    private String cvUrl;
 }

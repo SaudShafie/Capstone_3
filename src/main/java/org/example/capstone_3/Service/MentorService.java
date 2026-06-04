@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.MentorDTOIn;
 import org.example.capstone_3.DTO.OUT.MentorDTOOut;
-import org.example.capstone_3.Model.Admin;
 import org.example.capstone_3.Model.Mentor;
-import org.example.capstone_3.Repository.AdminRepository;
 import org.example.capstone_3.Repository.MentorRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +17,6 @@ import java.util.List;
 public class MentorService {
 
     private final MentorRepository mentorRepository;
-    private final AdminRepository adminRepository;
 
     public void create(MentorDTOIn dto) {
 
@@ -42,60 +39,43 @@ public class MentorService {
         mentorRepository.save(mentor);
     }
 
-    public MentorDTOOut getById(Integer id) {
-
+    public MentorDTOOut getApprovedById(Integer id) {
         Mentor mentor = mentorRepository.findMentorById(id);
-
         if (mentor == null) {
             throw new ApiException("Mentor with id " + id + " not found");
         }
-
+        if (!Boolean.TRUE.equals(mentor.getAcceptedByAdmin())) {
+            throw new ApiException("Mentor with id " + id + " is not available");
+        }
         return toDtoOut(mentor);
     }
 
-    public List<MentorDTOOut> getAll() {
-
-        List<Mentor> mentors = mentorRepository.findAll();
-
-        List<MentorDTOOut> mentorDTOOuts = new ArrayList<>();
-
-        for (Mentor mentor : mentors) {
-            mentorDTOOuts.add(toDtoOut(mentor));
-        }
-
-        return mentorDTOOuts;
-    }
-
-    public List<MentorDTOOut> getAcceptedMentors() {
-
-        List<Mentor> mentors = mentorRepository.findMentorsByAcceptedByAdmin(true);
-
-        List<MentorDTOOut> mentorDTOOuts = new ArrayList<>();
-
-        for (Mentor mentor : mentors) {
-            mentorDTOOuts.add(toDtoOut(mentor));
-        }
-
-        return mentorDTOOuts;
-    }
-
-    public void approveMentor(Integer adminId, Integer mentorId) {
-
-        Admin admin = adminRepository.findAdminById(adminId);
-
-        if (admin == null) {
-            throw new ApiException("Admin with id " + adminId + " not found");
-        }
-
-        Mentor mentor = mentorRepository.findMentorById(mentorId);
-
+    public MentorDTOOut getById(Integer id) {
+        Mentor mentor = mentorRepository.findMentorById(id);
         if (mentor == null) {
-            throw new ApiException("Mentor with id " + mentorId + " not found");
+            throw new ApiException("Mentor with id " + id + " not found");
         }
+        return toDtoOut(mentor);
+    }
 
-        mentor.setAcceptedByAdmin(true);
+    public List<MentorDTOOut> getApprovedMentors() {
+        return mapMentors(mentorRepository.findMentorsByAcceptedByAdmin(true));
+    }
 
-        mentorRepository.save(mentor);
+    public List<MentorDTOOut> getPendingMentors() {
+        return mapMentors(mentorRepository.findMentorsByAcceptedByAdmin(false));
+    }
+
+    public List<MentorDTOOut> getAllMentors() {
+        return mapMentors(mentorRepository.findAll());
+    }
+
+    private List<MentorDTOOut> mapMentors(List<Mentor> mentors) {
+        List<MentorDTOOut> mentorDTOOuts = new ArrayList<>();
+        for (Mentor mentor : mentors) {
+            mentorDTOOuts.add(toDtoOut(mentor));
+        }
+        return mentorDTOOuts;
     }
 
     public void update(Integer id, MentorDTOIn dto) {

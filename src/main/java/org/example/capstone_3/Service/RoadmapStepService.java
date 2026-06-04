@@ -3,6 +3,7 @@ package org.example.capstone_3.Service;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.RoadmapStepDTOIN;
+import org.example.capstone_3.DTO.OUT.CurrentRoadmapStepDTOOut;
 import org.example.capstone_3.DTO.OUT.RoadmapStepDTOOUT;
 import org.example.capstone_3.Model.Roadmap;
 import org.example.capstone_3.Model.RoadmapStep;
@@ -138,20 +139,44 @@ public class RoadmapStepService {
     }
 
     public RoadmapStepDTOOUT getNextStep(Integer student_id, Integer roadmap_id) {
-        Roadmap roadmap = findRoadmap(roadmap_id);
+        CurrentRoadmapStepDTOOut current = getCurrentRoadmapStep(student_id, roadmap_id);
+        if (current.getCurrentStep() == null) {
+            throw new ApiException("All steps are completed");
+        }
+        return current.getCurrentStep();
+    }
 
-        if (!roadmap.getStudent().getId().equals(student_id)) {
+    public CurrentRoadmapStepDTOOut getCurrentRoadmapStep(Integer studentId, Integer roadmapId) {
+        Roadmap roadmap = findRoadmap(roadmapId);
+
+        if (!roadmap.getStudent().getId().equals(studentId)) {
             throw new ApiException("Roadmap does not belong to this student");
         }
 
-        List<RoadmapStep> allSteps = roadmapStepRepository.findByRoadmapIdOrderByOrderNumber(roadmap_id);
+        List<RoadmapStep> allSteps = roadmapStepRepository.findByRoadmapIdOrderByOrderNumber(roadmapId);
+        int completedCount = 0;
+        RoadmapStep current = null;
+
         for (RoadmapStep step : allSteps) {
-            if (!step.getCompleted()) {
-                return convertToDTO(step);
+            if (Boolean.TRUE.equals(step.getCompleted())) {
+                completedCount++;
+            } else if (current == null) {
+                current = step;
             }
         }
 
-        throw new ApiException("All steps are completed");
+        boolean allCompleted = !allSteps.isEmpty() && current == null;
+
+        return new CurrentRoadmapStepDTOOut(
+                roadmap.getId(),
+                roadmap.getTitle(),
+                roadmap.getTargetRole(),
+                roadmap.getProgressPercentage(),
+                current != null ? convertToDTO(current) : null,
+                allCompleted,
+                allSteps.size(),
+                completedCount
+        );
     }
 
     private Roadmap findRoadmap(Integer roadmap_id) {

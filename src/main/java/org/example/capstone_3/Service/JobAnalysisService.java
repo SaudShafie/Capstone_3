@@ -324,17 +324,17 @@ public class JobAnalysisService {
     }
 
     private JobAnalysisDTOOut toDtoOut(JobAnalysis jobAnalysis) {
-        return new JobAnalysisDTOOut(
-                jobAnalysis.getId(),
-                jobAnalysis.getJobTitle(),
-                jobAnalysis.getJobDescription(),
-                jobAnalysis.getRequiredSkillsText(),
-                jobAnalysis.getMissingSkillsText(),
-                jobAnalysis.getMatchScore(),
-                jobAnalysis.getRecommendations(),
-                mapStudent(jobAnalysis.getStudent()),
-                mapSkills(jobAnalysis.getSkills())
-        );
+//        return new JobAnalysisDTOOut(
+//                jobAnalysis.getId(),
+//                jobAnalysis.getJobTitle(),
+//                jobAnalysis.getJobDescription(),
+//                jobAnalysis.getRequiredSkillsText(),
+//                jobAnalysis.getMissingSkillsText(),
+//                jobAnalysis.getMatchScore(),
+//                jobAnalysis.getRecommendations(),
+//                mapStudent(jobAnalysis.getStudent()),
+//                mapSkills(jobAnalysis.getSkills())
+//        );
     }
 
     private StudentSummaryDTOOut mapStudent(Student student) {

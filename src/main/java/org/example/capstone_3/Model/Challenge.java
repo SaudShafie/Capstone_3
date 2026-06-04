@@ -42,6 +42,10 @@ public class Challenge {
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime deadline;
 
+    // update challenge flow
+    @Column(columnDefinition = "boolean default true")
+    private Boolean open;
+
     @ManyToOne
     @JoinColumn(name = "skill_id")
     private Skill skill;

@@ -31,7 +31,6 @@ public class MentorService {
         applyDto(mentor, dto);
 
         mentor.setRating(0.0);
-        mentor.setAvailable(true);
         mentor.setAcceptedByAdmin(false);
         mentor.setCreatedAt(LocalDateTime.now());
 
@@ -140,7 +139,6 @@ public class MentorService {
                 mentor.getVolunteer(),
                 mentor.getSessionPrice(),
                 mentor.getRating(),
-                mentor.getAvailable(),
                 mentor.getAcceptedByAdmin()
         );
     }

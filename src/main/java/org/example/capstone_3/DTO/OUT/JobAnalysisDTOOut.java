@@ -21,9 +21,13 @@ public class JobAnalysisDTOOut {
 
     private Integer matchScore;
 
+    private String summary;
+
+    private String improvements;
+
     private String recommendations;
 
-    private StudentSummaryDTOOut student;
+    //private StudentSummaryDTOOut student;
 
-    private Set<SkillDTOOut> skills;
+    //private Set<SkillDTOOut> skills;
 }

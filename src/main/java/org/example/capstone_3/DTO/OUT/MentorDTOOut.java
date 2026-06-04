@@ -29,7 +29,5 @@ public class MentorDTOOut {
 
     private Double rating;
 
-    private Boolean available;
-
     private Boolean acceptedByAdmin;
 }

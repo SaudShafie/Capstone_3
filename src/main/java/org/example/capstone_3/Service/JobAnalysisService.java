@@ -36,6 +36,7 @@ public class JobAnalysisService {
     private final JobAnalysisRepository jobAnalysisRepository;
     private final StudentRepository studentRepository;
     private final SkillRepository skillRepository;
+    private final StudentProfilePromptHelper studentProfilePromptHelper;
     private final AiService aiService;
 
     /**
@@ -100,18 +101,18 @@ public class JobAnalysisService {
         return jobAnalysisDTOOuts;
     }
 
-//    public List<JobAnalysisDTOOut> getByStudentId(Integer studentId) {
-//        Student student = studentRepository.findStudentById(studentId);
-//        if (student == null) {
-//            throw new ApiException("Student with id " + studentId + " not found");
-//        }
-//
-//        List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
-//        for (JobAnalysis jobAnalysis : jobAnalysisRepository.findJobAnalysesByStudentId(studentId)) {
-//            jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
-//        }
-//        return jobAnalysisDTOOuts;
-//    }
+   public List<JobAnalysisDTOOut> getByStudentId(Integer studentId) {
+       Student student = studentRepository.findStudentById(studentId);
+       if (student == null) {
+           throw new ApiException("Student with id " + studentId + " not found");
+       }
+
+       List<JobAnalysisDTOOut> jobAnalysisDTOOuts = new ArrayList<>();
+       for (JobAnalysis jobAnalysis : jobAnalysisRepository.findJobAnalysesByStudentId(studentId)) {
+           jobAnalysisDTOOuts.add(toDtoOut(jobAnalysis));
+       }
+       return jobAnalysisDTOOuts;
+   }
 
     public void update(Integer id, JobAnalysisDTOIn dto) {
         updateJobAnalysis(id, dto);
@@ -134,9 +135,8 @@ public class JobAnalysisService {
     private String buildJobAnalysisPrompt(Student student, String jobDescription) {
         String studentSkillNames = formatStudentSkills(student);
         String availableSkillNames = formatAvailableSkills();
-        String cv = student.getCvText() == null || student.getCvText().isBlank()
-                ? "(no CV provided)"
-                : student.getCvText();
+        String cv = studentProfilePromptHelper.formatCvForPrompt(student);
+        String github = studentProfilePromptHelper.formatGithubForPrompt(student);
 
         return """
                 You are a career coach. Compare the student profile to the job description.
@@ -169,6 +169,9 @@ public class JobAnalysisService {
                 --- CV ---
                 %s
                 
+                --- GitHub ---
+                %s
+                
                 --- Job description ---
                 %s
                 """.formatted(
@@ -179,6 +182,7 @@ public class JobAnalysisService {
                 student.getYearsExperience(),
                 studentSkillNames,
                 cv,
+                github,
                 jobDescription
         );
     }

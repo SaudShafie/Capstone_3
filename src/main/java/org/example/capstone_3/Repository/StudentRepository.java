@@ -16,4 +16,8 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
     List<Student> findStudentsByTargetRoleContainingIgnoreCase(String targetRole);
 
     List<Student> findStudentsByMajorContainingIgnoreCase(String major);
+
+    List<Student> findAllByOrderByXpDescFullNameAsc();
+
+    long countByXpGreaterThan(Integer xp);
 }

@@ -11,6 +11,9 @@ spring.datasource.password=
 # --- AI (required for aiService.ask) ---
 # openai.api.key=sk-your-key-here
 
+# --- GitHub (optional; recommended for profile fetch rate limits) ---
+# github.api.token=
+
 # --- Other API keys (uncomment when needed) ---
 # gemini.api.key=
 # stripe.api.key=

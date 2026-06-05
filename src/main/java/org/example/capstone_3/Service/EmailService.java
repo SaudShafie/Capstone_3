@@ -1,108 +1,131 @@
 package org.example.capstone_3.Service;
 
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.Model.Mentor;
-import org.example.capstone_3.Model.MockInterviewReport;
 import org.example.capstone_3.Model.MockInterview;
+import org.example.capstone_3.Model.MockInterviewReport;
 import org.example.capstone_3.Model.Student;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class EmailService {
 
+    private static final String SYSTEM_NAME = "Khutaa";
+
     private final JavaMailSender mailSender;
+    private final MockInterviewReportPdfService mockInterviewReportPdfService;
+
+    @Value("${spring.mail.username:}")
+    private String mailFrom;
 
     public void sendMentorInterviewScheduledEmail(Student student, Mentor mentor, MockInterview mockInterview) {
+        String subject = SYSTEM_NAME + " — Mock Interview Scheduled";
 
-        String subject = "CareerFit Mock Interview Scheduled";
-
-        String body = """
-                Hello,
-
-                Your mock interview has been scheduled successfully.
-
-                Interview Details:
-                Student: %s
-                Mentor: %s
-                Interview Type: %s
-                Date & Time: %s
-                Duration: %s minutes
-                Meeting Provider: %s
-                Meeting Link: %s
-
-                Please join the meeting using the link above at the scheduled time.
-
-                CareerFit Community
-                """.formatted(
-                student.getFullName(),
-                mentor.getFullName(),
-                mockInterview.getInterviewType(),
-                mockInterview.getScheduledAt(),
-                mockInterview.getDurationMinutes(),
-                mockInterview.getMeetingProvider(),
-                mockInterview.getUrl()
+        sendHtmlEmail(
+                student.getEmail(),
+                subject,
+                EmailHtmlTemplates.buildScheduledInterviewHtml(
+                        student.getFullName(), true, student, mentor, mockInterview),
+                EmailHtmlTemplates.buildScheduledInterviewPlainText(
+                        student.getFullName(), true, student, mentor, mockInterview)
         );
 
-        sendEmail(student.getEmail(), subject, body);
-        sendEmail(mentor.getEmail(), subject, body);
+        sendHtmlEmail(
+                mentor.getEmail(),
+                subject,
+                EmailHtmlTemplates.buildScheduledInterviewHtml(
+                        mentor.getFullName(), false, student, mentor, mockInterview),
+                EmailHtmlTemplates.buildScheduledInterviewPlainText(
+                        mentor.getFullName(), false, student, mentor, mockInterview)
+        );
     }
 
-    private void sendEmail(String to, String subject, String body) {
+    public void sendMockInterviewReportEmail(Student student,
+                                             Mentor mentor,
+                                             MockInterview mockInterview,
+                                             MockInterviewReport report) {
 
+        if (student.getEmail() == null || student.getEmail().isBlank()) {
+            return;
+        }
+
+        byte[] pdfBytes = mockInterviewReportPdfService.generateReportPdf(
+                student,
+                mentor,
+                mockInterview,
+                report
+        );
+
+        String attachmentName = mockInterviewReportPdfService.buildAttachmentFileName(report);
+        String subject = SYSTEM_NAME + " — Your Mock Interview Report";
+
+        sendHtmlEmailWithPdfAttachment(
+                student.getEmail(),
+                subject,
+                EmailHtmlTemplates.buildReportEmailHtml(student, mentor, mockInterview),
+                EmailHtmlTemplates.buildReportEmailPlainText(student, mentor, mockInterview),
+                attachmentName,
+                pdfBytes
+        );
+    }
+
+    private void sendHtmlEmail(String to, String subject, String htmlBody, String plainBody) {
         if (to == null || to.isBlank()) {
             return;
         }
 
-        SimpleMailMessage message = new SimpleMailMessage();
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(plainBody, htmlBody);
 
-        mailSender.send(message);
+            if (mailFrom != null && !mailFrom.isBlank()) {
+                helper.setFrom(mailFrom);
+            }
+
+            mailSender.send(mimeMessage);
+        } catch (Exception e) {
+            throw new ApiException("Failed to send email: " + e.getMessage());
+        }
     }
 
-    public void sendMockInterviewReportEmail(Student student, Mentor mentor, MockInterview mockInterview, MockInterviewReport report) {
+    private void sendHtmlEmailWithPdfAttachment(String to,
+                                                String subject,
+                                                String htmlBody,
+                                                String plainBody,
+                                                String attachmentName,
+                                                byte[] pdfBytes) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-        String subject = "CareerFit Mock Interview Report";
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(plainBody, htmlBody);
 
-        String body = """
-            Hello %s,
+            if (mailFrom != null && !mailFrom.isBlank()) {
+                helper.setFrom(mailFrom);
+            }
 
-            Your mock interview report is ready.
+            helper.addAttachment(
+                    attachmentName,
+                    new ByteArrayResource(pdfBytes),
+                    "application/pdf"
+            );
 
-            Interview Details:
-            Mentor: %s
-            Interview Type: %s
-            Interview Date & Time: %s
-
-            Summary:
-            %s
-
-            Strengths:
-            %s
-
-            Weaknesses:
-            %s
-
-            Recommendations:
-            %s
-
-            CareerFit Community
-            """.formatted(
-                student.getFullName(),
-                mentor.getFullName(),
-                mockInterview.getInterviewType(),
-                mockInterview.getScheduledAt(),
-                report.getSummary(),
-                report.getStrengths(),
-                report.getWeaknesses(),
-                report.getRecommendations()
-        );
-
-        sendEmail(student.getEmail(), subject, body);
+            mailSender.send(mimeMessage);
+        } catch (Exception e) {
+            throw new ApiException("Failed to send interview report email: " + e.getMessage());
+        }
     }
 }

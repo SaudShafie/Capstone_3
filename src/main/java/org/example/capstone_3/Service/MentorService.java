@@ -114,6 +114,7 @@ public class MentorService {
 
     private void applyDto(Mentor mentor, MentorDTOIn dto) {
         mentor.setFullName(dto.getFullName());
+        mentor.setPhoneNumber(dto.getPhoneNumber());
         mentor.setEmail(dto.getEmail());
         mentor.setPassword(dto.getPassword());
         mentor.setJobTitle(dto.getJobTitle());
@@ -129,13 +130,13 @@ public class MentorService {
         return new MentorDTOOut(
                 mentor.getId(),
                 mentor.getFullName(),
+                mentor.getPhoneNumber(),
                 mentor.getEmail(),
                 mentor.getJobTitle(),
                 mentor.getCompany(),
                 mentor.getSpecialization(),
                 mentor.getYearsExperience(),
                 mentor.getBio(),
-                volunteer,
                 mentor.getSessionPrice(),
                 mentor.getRating(),
                 mentor.getAcceptedByAdmin()

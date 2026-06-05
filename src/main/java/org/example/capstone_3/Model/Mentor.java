@@ -24,6 +24,9 @@ public class Mentor {
     @Column(columnDefinition = "varchar(50) not null")
     private String fullName;
 
+    @Column(unique = true, columnDefinition = "varchar(13) not null")
+    private String phoneNumber;
+
     @Column(unique = true, columnDefinition = "varchar(100) not null")
     private String email;
 

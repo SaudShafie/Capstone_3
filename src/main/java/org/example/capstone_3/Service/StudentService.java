@@ -343,6 +343,7 @@ public class StudentService {
 
     private void applyDto(Student student, StudentDTOIn dto) {
         student.setFullName(dto.getFullName());
+        student.setPhoneNumber(dto.getPhoneNumber());
         student.setEmail(dto.getEmail());
         student.setPassword(dto.getPassword());
         student.setMajor(dto.getMajor());
@@ -355,6 +356,7 @@ public class StudentService {
         return new StudentDTOOut(
                 student.getId(),
                 student.getFullName(),
+                student.getPhoneNumber(),
                 student.getEmail(),
                 student.getMajor(),
                 student.getTargetRole(),

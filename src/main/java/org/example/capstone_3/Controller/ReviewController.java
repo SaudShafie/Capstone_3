@@ -30,12 +30,28 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getReviewsByMentorId(mentorId));
     }
 
-    @PostMapping("/add/{studentId}/{mentorId}/{mockInterviewId}")
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<?> getReviewsByStudentId(@PathVariable Integer studentId) {
+        return ResponseEntity.ok(reviewService.getReviewsByStudentId(studentId));
+    }
+
+    @GetMapping("/student/{studentId}/reviewable-interviews")
+    public ResponseEntity<?> getReviewableMockInterviews(@PathVariable Integer studentId) {
+        return ResponseEntity.ok(reviewService.getReviewableMockInterviews(studentId));
+    }
+
+    @PostMapping("/add/{studentId}/{mockInterviewId}")
     public ResponseEntity<?> saveReview(@PathVariable Integer studentId,
-                                        @PathVariable Integer mentorId,
                                         @PathVariable Integer mockInterviewId,
                                         @RequestBody @Valid ReviewDTOIN reviewDTOIN) {
-        return ResponseEntity.ok(reviewService.create(studentId, mentorId, mockInterviewId, reviewDTOIN));
+        return ResponseEntity.ok(reviewService.createByStudent(studentId, mockInterviewId, reviewDTOIN));
+    }
+
+    @PutMapping("/student/{studentId}/update/{reviewId}")
+    public ResponseEntity<?> updateReviewByStudent(@PathVariable Integer studentId,
+                                                   @PathVariable Integer reviewId,
+                                                   @RequestBody @Valid ReviewDTOIN reviewDTOIN) {
+        return ResponseEntity.ok(reviewService.updateByStudent(studentId, reviewId, reviewDTOIN));
     }
 
     @PutMapping("/update/{id}")

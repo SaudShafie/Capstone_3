@@ -7,11 +7,16 @@ import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.AiInterviewAnswerDTOIN;
 import org.example.capstone_3.DTO.IN.AiMockInterviewDTOIN;
 import org.example.capstone_3.DTO.IN.MockInterviewDTOIN;
+import org.example.capstone_3.DTO.OUT.AiInterviewQuestionsDTOOUT;
+import org.example.capstone_3.DTO.OUT.AiMockInterviewReportDTOOUT;
+import org.example.capstone_3.DTO.OUT.MentorMockInterviewDTOOUT;
 import org.example.capstone_3.DTO.OUT.MockInterviewDTOOUT;
 import org.example.capstone_3.Model.Mentor;
 import org.example.capstone_3.Model.MockInterview;
+import org.example.capstone_3.Model.MockInterviewReport;
 import org.example.capstone_3.Model.Student;
 import org.example.capstone_3.Repository.MentorRepository;
+import org.example.capstone_3.Repository.MockInterviewReportRepository;
 import org.example.capstone_3.Repository.MockInterviewRepository;
 import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
@@ -35,7 +40,20 @@ public class MockInterviewService {
     private static final Pattern SCORE_PATTERN =
             Pattern.compile("\"score\"\\s*:\\s*(\\d+)");
 
+    private static final Pattern SUMMARY_PATTERN =
+            Pattern.compile("\"summary\"\\s*:\\s*\"(.*?)\"", Pattern.DOTALL);
+
+    private static final Pattern STRENGTHS_PATTERN =
+            Pattern.compile("\"strengths\"\\s*:\\s*\"(.*?)\"", Pattern.DOTALL);
+
+    private static final Pattern WEAKNESSES_PATTERN =
+            Pattern.compile("\"weaknesses\"\\s*:\\s*\"(.*?)\"", Pattern.DOTALL);
+
+    private static final Pattern RECOMMENDATIONS_PATTERN =
+            Pattern.compile("\"recommendations\"\\s*:\\s*\"(.*?)\"", Pattern.DOTALL);
+
     private final MockInterviewRepository mockInterviewRepository;
+    private final MockInterviewReportRepository mockInterviewReportRepository;
     private final StudentRepository studentRepository;
     private final MentorRepository mentorRepository;
     private final AiService aiService;
@@ -43,23 +61,10 @@ public class MockInterviewService {
     private final MeetingService meetingService;
     private final EmailService emailService;
 
-    // =========================
-    // MENTOR FLOW
-    // =========================
-
     public void createMentorInterview(Integer studentId, Integer mentorId, MockInterviewDTOIN dto) {
 
-        Student student = studentRepository.findStudentById(studentId);
-
-        if (student == null) {
-            throw new ApiException("Student with id " + studentId + " not found");
-        }
-
-        Mentor mentor = mentorRepository.findMentorById(mentorId);
-
-        if (mentor == null) {
-            throw new ApiException("Mentor with id " + mentorId + " not found");
-        }
+        Student student = findStudent(studentId);
+        Mentor mentor = findMentor(mentorId);
 
         if (!Boolean.TRUE.equals(mentor.getAcceptedByAdmin())) {
             throw new ApiException("Mentor is not accepted by admin yet");
@@ -90,19 +95,10 @@ public class MockInterviewService {
 
     public void acceptMentorInterview(Integer mentorId, Integer mockInterviewId) {
 
-        Mentor mentor = mentorRepository.findMentorById(mentorId);
+        Mentor mentor = findMentor(mentorId);
+        MockInterview mockInterview = findMockInterview(mockInterviewId);
 
-        if (mentor == null) {
-            throw new ApiException("Mentor with id " + mentorId + " not found");
-        }
-
-        MockInterview mockInterview = mockInterviewRepository.findMockInterviewById(mockInterviewId);
-
-        if (mockInterview == null) {
-            throw new ApiException("Mock interview with id " + mockInterviewId + " not found");
-        }
-
-        if (!mockInterview.getInterviewMode().equals("MENTOR")) {
+        if (!"MENTOR".equals(mockInterview.getInterviewMode())) {
             throw new ApiException("Only mentor interviews can be accepted by mentor");
         }
 
@@ -110,7 +106,7 @@ public class MockInterviewService {
             throw new ApiException("This mock interview does not belong to this mentor");
         }
 
-        if (!mockInterview.getStatus().equals("PENDING")) {
+        if (!"PENDING".equals(mockInterview.getStatus())) {
             throw new ApiException("Only pending interviews can be accepted");
         }
 
@@ -134,88 +130,54 @@ public class MockInterviewService {
         );
     }
 
-    public List<MockInterviewDTOOUT> getPendingMentorInterviews(Integer mentorId) {
+    public List<MentorMockInterviewDTOOUT> getPendingMentorInterviews(Integer mentorId) {
 
-        Mentor mentor = mentorRepository.findMentorById(mentorId);
-
-        if (mentor == null) {
-            throw new ApiException("Mentor with id " + mentorId + " not found");
-        }
+        findMentor(mentorId);
 
         List<MockInterview> mockInterviews =
                 mockInterviewRepository.findMockInterviewsByMentorIdAndStatus(mentorId, "PENDING");
 
-        List<MockInterviewDTOOUT> dtoOuts = new ArrayList<>();
+        List<MentorMockInterviewDTOOUT> dtoOuts = new ArrayList<>();
 
         for (MockInterview mockInterview : mockInterviews) {
-            if (mockInterview.getInterviewMode().equals("MENTOR")) {
-                dtoOuts.add(toDtoOut(mockInterview));
+            if ("MENTOR".equals(mockInterview.getInterviewMode())) {
+                dtoOuts.add(toMentorDtoOut(mockInterview));
             }
         }
 
         return dtoOuts;
     }
 
-    public void completeMentorInterview(Integer mentorId, Integer mockInterviewId, String feedback, Integer score) {
+    public MentorMockInterviewDTOOUT getMentorInterviewDetails(Integer mentorId, Integer mockInterviewId) {
 
-        Mentor mentor = mentorRepository.findMentorById(mentorId);
+        findMentor(mentorId);
 
-        if (mentor == null) {
-            throw new ApiException("Mentor with id " + mentorId + " not found");
-        }
+        MockInterview mockInterview = findMockInterview(mockInterviewId);
 
-        MockInterview mockInterview = mockInterviewRepository.findMockInterviewById(mockInterviewId);
-
-        if (mockInterview == null) {
-            throw new ApiException("Mock interview with id " + mockInterviewId + " not found");
-        }
-
-        if (!mockInterview.getInterviewMode().equals("MENTOR")) {
-            throw new ApiException("Only mentor interviews can be completed by mentor");
+        if (!"MENTOR".equals(mockInterview.getInterviewMode())) {
+            throw new ApiException("This endpoint is only for mentor interviews");
         }
 
         if (mockInterview.getMentor() == null || !mockInterview.getMentor().getId().equals(mentorId)) {
             throw new ApiException("This mock interview does not belong to this mentor");
         }
 
-        if (!mockInterview.getStatus().equals("SCHEDULE")) {
-            throw new ApiException("Only scheduled interviews can be completed");
-        }
-
-        if (score == null || score < 0 || score > 100) {
-            throw new ApiException("Score must be between 0 and 100");
-        }
-
-        mockInterview.setFeedback(feedback);
-        mockInterview.setScore(score);
-        mockInterview.setStatus("COMPLETE");
-
-        mockInterviewRepository.save(mockInterview);
+        return toMentorDtoOut(mockInterview);
     }
 
-    // =========================
-    // AI FLOW
-    // =========================
+    public AiInterviewQuestionsDTOOUT createAiInterview(Integer studentId, AiMockInterviewDTOIN dto) {
 
-    public void createAiInterview(Integer studentId, AiMockInterviewDTOIN dto) {
-
-        Student student = studentRepository.findStudentById(studentId);
-
-        if (student == null) {
-            throw new ApiException("Student with id " + studentId + " not found");
-        }
+        Student student = findStudent(studentId);
 
         MockInterview mockInterview = new MockInterview();
 
         mockInterview.setInterviewMode("AI");
         mockInterview.setInterviewType(dto.getInterviewType());
         mockInterview.setDescription(dto.getDescription());
-
         mockInterview.setScheduledAt(LocalDateTime.now());
         mockInterview.setDurationMinutes(0);
         mockInterview.setStatus("SCHEDULE");
         mockInterview.setCreatedAt(LocalDateTime.now());
-
         mockInterview.setStudent(student);
         mockInterview.setMentor(null);
 
@@ -228,23 +190,24 @@ public class MockInterviewService {
         mockInterview.setExternalMeetingId(null);
 
         mockInterviewRepository.save(mockInterview);
+
+        return new AiInterviewQuestionsDTOOUT(
+                mockInterview.getId(),
+                mockInterview.getInterviewType(),
+                mockInterview.getDescription(),
+                mockInterview.getQuestions(),
+                mockInterview.getStatus()
+        );
     }
 
-    public void submitAiInterviewAnswers(Integer studentId, Integer mockInterviewId, AiInterviewAnswerDTOIN dto) {
+    public AiMockInterviewReportDTOOUT submitAiInterviewAnswers(Integer studentId,
+                                                                Integer mockInterviewId,
+                                                                AiInterviewAnswerDTOIN dto) {
 
-        Student student = studentRepository.findStudentById(studentId);
+        Student student = findStudent(studentId);
+        MockInterview mockInterview = findMockInterview(mockInterviewId);
 
-        if (student == null) {
-            throw new ApiException("Student with id " + studentId + " not found");
-        }
-
-        MockInterview mockInterview = mockInterviewRepository.findMockInterviewById(mockInterviewId);
-
-        if (mockInterview == null) {
-            throw new ApiException("Mock interview with id " + mockInterviewId + " not found");
-        }
-
-        if (!mockInterview.getInterviewMode().equals("AI")) {
+        if (!"AI".equals(mockInterview.getInterviewMode())) {
             throw new ApiException("This endpoint is only for AI interviews");
         }
 
@@ -252,8 +215,12 @@ public class MockInterviewService {
             throw new ApiException("This AI interview does not belong to this student");
         }
 
-        if (mockInterview.getStatus().equals("COMPLETE")) {
+        if ("COMPLETE".equals(mockInterview.getStatus())) {
             throw new ApiException("This AI interview is already completed");
+        }
+
+        if (mockInterviewReportRepository.findMockInterviewReportByMockInterviewId(mockInterviewId) != null) {
+            throw new ApiException("This AI interview already has a report");
         }
 
         mockInterview.setStudentAnswers(dto.getStudentAnswers());
@@ -265,15 +232,48 @@ public class MockInterviewService {
         mockInterview.setStatus("COMPLETE");
 
         mockInterviewRepository.save(mockInterview);
+
+        MockInterviewReport report = new MockInterviewReport();
+
+        report.setSummary(parseTextField(json, SUMMARY_PATTERN, "summary"));
+        report.setStrengths(parseTextField(json, STRENGTHS_PATTERN, "strengths"));
+        report.setWeaknesses(parseTextField(json, WEAKNESSES_PATTERN, "weaknesses"));
+        report.setRecommendations(parseTextField(json, RECOMMENDATIONS_PATTERN, "recommendations"));
+        report.setGeneratedAt(LocalDateTime.now());
+        report.setStudent(student);
+        report.setMockInterview(mockInterview);
+
+        mockInterviewReportRepository.save(report);
+
+        return toAiReportDtoOut(report, mockInterview);
+    }
+
+    public AiInterviewQuestionsDTOOUT getAiInterviewQuestions(Integer studentId, Integer mockInterviewId) {
+
+        findStudent(studentId);
+
+        MockInterview mockInterview = findMockInterview(mockInterviewId);
+
+        if (!"AI".equals(mockInterview.getInterviewMode())) {
+            throw new ApiException("This is not an AI interview");
+        }
+
+        if (mockInterview.getStudent() == null || !mockInterview.getStudent().getId().equals(studentId)) {
+            throw new ApiException("This AI interview does not belong to this student");
+        }
+
+        return new AiInterviewQuestionsDTOOUT(
+                mockInterview.getId(),
+                mockInterview.getInterviewType(),
+                mockInterview.getDescription(),
+                mockInterview.getQuestions(),
+                mockInterview.getStatus()
+        );
     }
 
     public List<MockInterviewDTOOUT> getStudentAiInterviews(Integer studentId) {
 
-        Student student = studentRepository.findStudentById(studentId);
-
-        if (student == null) {
-            throw new ApiException("Student with id " + studentId + " not found");
-        }
+        findStudent(studentId);
 
         List<MockInterview> mockInterviews =
                 mockInterviewRepository.findMockInterviewsByStudentIdAndInterviewMode(studentId, "AI");
@@ -287,17 +287,9 @@ public class MockInterviewService {
         return dtoOuts;
     }
 
-    // =========================
-    // COMMON CRUD
-    // =========================
-
     public MockInterviewDTOOUT getById(Integer id) {
 
-        MockInterview mockInterview = mockInterviewRepository.findMockInterviewById(id);
-
-        if (mockInterview == null) {
-            throw new ApiException("Mock interview with id " + id + " not found");
-        }
+        MockInterview mockInterview = findMockInterview(id);
 
         return toDtoOut(mockInterview);
     }
@@ -317,18 +309,10 @@ public class MockInterviewService {
 
     public void delete(Integer id) {
 
-        MockInterview mockInterview = mockInterviewRepository.findMockInterviewById(id);
-
-        if (mockInterview == null) {
-            throw new ApiException("Mock interview with id " + id + " not found");
-        }
+        MockInterview mockInterview = findMockInterview(id);
 
         mockInterviewRepository.delete(mockInterview);
     }
-
-    // =========================
-    // AI PROMPTS
-    // =========================
 
     private String generateMentorQuestions(Student student, Mentor mentor, MockInterviewDTOIN dto) {
 
@@ -337,28 +321,28 @@ public class MockInterviewService {
 
         String prompt = """
                 You are helping a mentor prepare for a mock interview.
-                
+
                 Respond with JSON only using this exact shape:
                 {"questions": "Question 1...\\nQuestion 2...\\nQuestion 3...\\nQuestion 4...\\nQuestion 5..."}
-                
+
                 Generate 10 suggested questions. These questions are only suggestions for the mentor.
-                
+
                 Interview type: %s
                 Interview description: %s
-                
+
                 Student name: %s
                 Student major: %s
                 Student target role: %s
                 Student years of experience: %s
                 Student readiness score: %s
-                
+
                 Mentor job title: %s
                 Mentor specialization: %s
                 Mentor years of experience: %s
-                
+
                 Student CV:
                 %s
-                
+
                 Student GitHub:
                 %s
                 """.formatted(
@@ -388,25 +372,25 @@ public class MockInterviewService {
 
         String prompt = """
                 You are an AI mock interviewer.
-                
+
                 Respond with JSON only using this exact shape:
                 {"questions": "Question 1...\\nQuestion 2...\\nQuestion 3...\\nQuestion 4...\\nQuestion 5..."}
-                
+
                 Generate 10 interview questions for the student.
                 The questions must match the interview type, target role, and student profile.
-                
+
                 Interview type: %s
                 Interview description: %s
-                
+
                 Student name: %s
                 Student major: %s
                 Student target role: %s
                 Student years of experience: %s
                 Student readiness score: %s
-                
+
                 Student CV:
                 %s
-                
+
                 Student GitHub:
                 %s
                 """.formatted(
@@ -430,33 +414,37 @@ public class MockInterviewService {
 
         String prompt = """
                 You are an AI interview evaluator.
-                
+
                 Respond with JSON only using this exact shape:
                 {
                   "feedback": "...",
-                  "score": 0
+                  "score": 0,
+                  "summary": "...",
+                  "strengths": "...",
+                  "weaknesses": "...",
+                  "recommendations": "..."
                 }
-                
+
                 score must be an integer from 0 to 100.
-                
+
                 Evaluate the student's answers based on:
                 - correctness
                 - clarity
                 - depth
                 - relevance to the interview questions
                 - readiness for the target role
-                
+
                 Student name: %s
                 Student major: %s
                 Student target role: %s
                 Student readiness score: %s
-                
+
                 Interview type: %s
                 Interview description: %s
-                
+
                 Questions:
                 %s
-                
+
                 Student answers:
                 %s
                 """.formatted(
@@ -473,9 +461,19 @@ public class MockInterviewService {
         return aiService.ask(prompt);
     }
 
-    // =========================
-    // PARSING
-    // =========================
+    private void validateInterviewEndTimePassed(MockInterview mockInterview) {
+
+        if (mockInterview.getScheduledAt() == null || mockInterview.getDurationMinutes() == null) {
+            throw new ApiException("Mock interview schedule is incomplete");
+        }
+
+        LocalDateTime interviewEndTime =
+                mockInterview.getScheduledAt().plusMinutes(mockInterview.getDurationMinutes());
+
+        if (LocalDateTime.now().isBefore(interviewEndTime)) {
+            throw new ApiException("Mock interview can be completed only after interview end time");
+        }
+    }
 
     private String parseQuestions(String json) {
 
@@ -532,6 +530,39 @@ public class MockInterviewService {
         return score;
     }
 
+    private Student findStudent(Integer studentId) {
+
+        Student student = studentRepository.findStudentById(studentId);
+
+        if (student == null) {
+            throw new ApiException("Student with id " + studentId + " not found");
+        }
+
+        return student;
+    }
+
+    private Mentor findMentor(Integer mentorId) {
+
+        Mentor mentor = mentorRepository.findMentorById(mentorId);
+
+        if (mentor == null) {
+            throw new ApiException("Mentor with id " + mentorId + " not found");
+        }
+
+        return mentor;
+    }
+
+    private MockInterview findMockInterview(Integer mockInterviewId) {
+
+        MockInterview mockInterview = mockInterviewRepository.findMockInterviewById(mockInterviewId);
+
+        if (mockInterview == null) {
+            throw new ApiException("Mock interview with id " + mockInterviewId + " not found");
+        }
+
+        return mockInterview;
+    }
+
     private MockInterviewDTOOUT toDtoOut(MockInterview mockInterview) {
 
         Integer studentId = mockInterview.getStudent() != null ? mockInterview.getStudent().getId() : null;
@@ -539,17 +570,58 @@ public class MockInterviewService {
 
         return new MockInterviewDTOOUT(
                 mockInterview.getId(),
+                mockInterview.getInterviewMode(),
                 mockInterview.getInterviewType(),
+                mockInterview.getDescription(),
                 mockInterview.getScheduledAt(),
+                mockInterview.getDurationMinutes(),
                 mockInterview.getStatus(),
-                mockInterview.getQuestions(),
-                mockInterview.getStudentAnswers(),
-                mockInterview.getFeedback(),
-                mockInterview.getScore(),
                 mockInterview.getUrl(),
+                mockInterview.getMeetingProvider(),
                 mockInterview.getCreatedAt(),
                 studentId,
                 mentorId
+        );
+    }
+
+    private MentorMockInterviewDTOOUT toMentorDtoOut(MockInterview mockInterview) {
+
+        Student student = mockInterview.getStudent();
+        Mentor mentor = mockInterview.getMentor();
+
+        return new MentorMockInterviewDTOOUT(
+                mockInterview.getId(),
+                mockInterview.getInterviewMode(),
+                mockInterview.getInterviewType(),
+                mockInterview.getDescription(),
+                mockInterview.getScheduledAt(),
+                mockInterview.getDurationMinutes(),
+                mockInterview.getStatus(),
+                mockInterview.getQuestions(),
+                mockInterview.getUrl(),
+                mockInterview.getMeetingProvider(),
+                mockInterview.getCreatedAt(),
+                student != null ? student.getId() : null,
+                student != null ? student.getFullName() : null,
+                student != null ? student.getTargetRole() : null,
+                mentor != null ? mentor.getId() : null,
+                mentor != null ? mentor.getFullName() : null
+        );
+    }
+
+    private AiMockInterviewReportDTOOUT toAiReportDtoOut(MockInterviewReport report, MockInterview mockInterview) {
+
+        return new AiMockInterviewReportDTOOUT(
+                report.getId(),
+                mockInterview.getId(),
+                mockInterview.getInterviewType(),
+                mockInterview.getScore(),
+                mockInterview.getFeedback(),
+                report.getSummary(),
+                report.getStrengths(),
+                report.getWeaknesses(),
+                report.getRecommendations(),
+                report.getGeneratedAt()
         );
     }
 }

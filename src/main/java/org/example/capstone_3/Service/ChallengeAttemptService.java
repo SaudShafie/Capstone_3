@@ -15,6 +15,7 @@ import org.example.capstone_3.Repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -106,6 +107,17 @@ public class ChallengeAttemptService {
         challengeAttemptRepository.deleteById(id);
     }
 
+    public List<ChallengeAttemptDTOOUT> studentAttemptsForChallenge(Integer studentId, Integer challengeId) {
+        findStudent(studentId);
+        findChallenge(challengeId);
+
+        List<ChallengeAttemptDTOOUT> attempts = new ArrayList<>();
+        for (ChallengeAttempt attempt : challengeAttemptRepository.studentAttemptsForChallenge(studentId, challengeId)) {
+            attempts.add(toDtoOut(attempt));
+        }
+        return attempts;
+    }
+
     private void applyDto(ChallengeAttempt challengeAttempt, ChallengeAttemptDTOIN dto) {
         challengeAttempt.setSubmittedAnswer(dto.getSubmittedAnswer());
     }
@@ -134,15 +146,11 @@ public class ChallengeAttemptService {
     }
 
     private ChallengeAttemptDTOOUT toDtoOut(ChallengeAttempt challengeAttempt) {
-        Integer studentId = challengeAttempt.getStudent() != null ? challengeAttempt.getStudent().getId() : null;
-        Integer challengeId = challengeAttempt.getChallenge() != null ? challengeAttempt.getChallenge().getId() : null;
         return new ChallengeAttemptDTOOUT(
                 challengeAttempt.getId(),
                 challengeAttempt.getSubmittedAnswer(),
                 challengeAttempt.getCorrect(),
-                challengeAttempt.getSubmittedAt(),
-                studentId,
-                challengeId
+                challengeAttempt.getSubmittedAt()
         );
     }
 
@@ -153,25 +161,28 @@ public class ChallengeAttemptService {
         String json = aiService.ask(prompt);
         return parseIsCorrect(json);
     }
-
     private String buildIsCorrectPrompt(String submittedAnswer, String correctAnswer) {
         return """
-            You are a professional answer evaluator for a career development platform.
-            Your job is to compare a student's submitted answer against the correct answer
-            and determine whether the student's answer is correct.
-            
-            Be flexible with wording — if the meaning and core concept match, consider it correct.
-            Do not penalize for minor spelling differences or different phrasing of the same idea.
-            
-            Respond with JSON only using this exact shape:
-            {"isCorrect": false}
-            
-            Constraints:
-            - isCorrect: must be exactly true or false
-            
-            Correct Answer: %s
-            Student Answer: %s
-            """.formatted(correctAnswer, submittedAnswer);
+        You are a strict but fair answer evaluator for a career development platform
+        covering various domains including technical, business, soft skills, and more.
+
+        Compare the student's answer to the correct answer based on CONCEPTS, not exact wording.
+        Consider the answer CORRECT if the student demonstrates understanding of the core idea,
+        even if they use different phrasing, additional detail, or a different order.
+
+        Consider the answer INCORRECT only if:
+        - A key concept is missing
+        - The student states something factually wrong
+        - The answer is completely off-topic
+
+        Correct Answer: %s
+        Student Answer: %s
+
+        Respond with JSON only, no explanation, no markdown:
+        {"isCorrect": true}
+        or
+        {"isCorrect": false}
+        """.formatted(correctAnswer, submittedAnswer);
     }
 
     private boolean parseIsCorrect(String json) {

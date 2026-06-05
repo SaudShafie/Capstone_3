@@ -42,13 +42,13 @@ public class LearningGroupController {
         return ResponseEntity.ok(new ApiResponse("Learning group deleted successfully"));
     }
 
-    @PutMapping("/join-private/{student_id}/{code}")
+    @PostMapping("/join-private/{student_id}/{code}")
     public ResponseEntity<?> joinPrivateGroup(@PathVariable Integer student_id, @PathVariable String code) {
         learningGroupService.joinPrivateGroup(student_id, code);
         return ResponseEntity.ok(new ApiResponse("Joined private group successfully"));
     }
 
-    @PutMapping("/join-public/{student_id}/{group_id}")
+    @PostMapping("/join-public/{student_id}/{group_id}")
     public ResponseEntity<?> joinPublicGroup(@PathVariable Integer student_id, @PathVariable Integer group_id) {
         learningGroupService.joinPublicGroup(student_id, group_id);
         return ResponseEntity.ok(new ApiResponse("Joined public group successfully"));
@@ -58,5 +58,11 @@ public class LearningGroupController {
     public ResponseEntity<?> leaveGroup(@PathVariable Integer student_id, @PathVariable Integer group_id) {
         learningGroupService.leaveGroup(student_id, group_id);
         return ResponseEntity.ok(new ApiResponse("Left group successfully"));
+    }
+
+    @PostMapping("/invite/{inviter_id}/{invited_student_id}/{group_id}")
+    public ResponseEntity<?> inviteStudent(@PathVariable Integer inviter_id, @PathVariable Integer invited_student_id, @PathVariable Integer group_id) {
+        learningGroupService.inviteStudentToPrivateGroup(inviter_id, invited_student_id, group_id);
+        return ResponseEntity.ok(new ApiResponse("Invitation sent successfully"));
     }
 }

@@ -14,6 +14,10 @@ public class MentorDTOIn {
     @Size(min = 3, max = 50, message = "Full name must be between 3 and 50 characters")
     private String fullName;
 
+    @NotEmpty(message = "Phone number is required")
+    @Pattern(regexp = "^9665\\d{8}$", message = "Number should be valid Saudi number start with 966")
+    private String phoneNumber;
+
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
     @Size(max = 100, message = "Email must not exceed 100 characters")
@@ -46,9 +50,6 @@ public class MentorDTOIn {
 
     @Size(max = 1000, message = "Bio must not exceed 1000 characters")
     private String bio;
-
-    @NotNull(message = "Volunteer status is required")
-    private Boolean volunteer;
 
     @PositiveOrZero(message = "Session price must be 0 or more")
     private Double sessionPrice;

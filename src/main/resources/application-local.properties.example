@@ -19,4 +19,16 @@ spring.datasource.password=
 # stripe.api.key=
 # sendgrid.api.key=
 
+# --- Email (required for interview notifications and PDF report delivery) ---
+# spring.mail.host=smtp.gmail.com
+# spring.mail.port=587
+# spring.mail.username=your-email@gmail.com
+# spring.mail.password=your-app-password
+# spring.mail.properties.mail.smtp.auth=true
+# spring.mail.properties.mail.smtp.starttls.enable=true
+
+# --- UltraMsg WhatsApp (required for WhatsApp notifications) ---
+# ultramsg.api-url=https://api.ultramsg.com/instance179524
+# ultramsg.token=your-ultramsg-token
+# logging.level.org.example.capstone_3.Service.WhatsAppService=INFO
 

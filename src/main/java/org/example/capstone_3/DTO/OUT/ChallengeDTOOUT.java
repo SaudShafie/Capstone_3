@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -12,8 +14,7 @@ public class ChallengeDTOOUT {
     private Integer id;
     private String title;
     private String question;
-    private String correctAnswer;
     private Integer points;
     private String difficulty;
-    private Integer skillId;
+    private LocalDateTime deadline;
 }

@@ -36,9 +36,6 @@ public class Task {
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime deadline;
 
-    @Column(columnDefinition = "boolean default true")
-    private Boolean open;
-
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime createdAt;
 

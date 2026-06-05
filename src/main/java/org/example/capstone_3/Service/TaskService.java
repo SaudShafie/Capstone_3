@@ -7,8 +7,10 @@ import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.TaskDTOIN;
 import org.example.capstone_3.DTO.OUT.TaskDTOOUT;
 import org.example.capstone_3.Model.LearningGroup;
+import org.example.capstone_3.Model.Student;
 import org.example.capstone_3.Model.Task;
 import org.example.capstone_3.Repository.LearningGroupRepository;
+import org.example.capstone_3.Repository.StudentRepository;
 import org.example.capstone_3.Repository.TaskRepository;
 import org.example.capstone_3.Repository.TaskSubmissionRepository;
 import org.springframework.stereotype.Service;
@@ -32,11 +34,10 @@ public class TaskService {
             Pattern.compile("\"points\"\\s*:\\s*(\\d+)");
     private static final Pattern DIFFICULTY_PATTERN =
             Pattern.compile("\"difficulty\"\\s*:\\s*\"(EASY|MEDIUM|HARD)\"");
-    private static final Pattern DEADLINE_DAYS_PATTERN =
-            Pattern.compile("\"deadlineDays\"\\s*:\\s*(\\d+)");
 
     private final TaskRepository taskRepository;
     private final LearningGroupRepository learningGroupRepository;
+    private final StudentRepository studentRepository;
     private final AiService aiService;
 
     public List<TaskDTOOUT> getAllTasks() {
@@ -99,6 +100,37 @@ public class TaskService {
         taskRepository.delete(task);
     }
 
+    public List<TaskDTOOUT> unsubmittedTasksForStudent(Integer learningGroupId, Integer studentId) {
+        LearningGroup learningGroup = findLearningGroup(learningGroupId);
+        Student student = findStudent(studentId);
+
+        if (!student.getLearningGroups().contains(learningGroup)) {
+            throw new ApiException("Student is not a member of this group");
+        }
+
+        List<TaskDTOOUT> unsubmittedTasks = new ArrayList<>();
+        for (Task task : taskRepository.findUnsubmittedTasksByGroupAndStudent(learningGroupId, studentId)) {
+            unsubmittedTasks.add(convertToDTO(task));
+        }
+        return unsubmittedTasks;
+    }
+
+    private Student findStudent(Integer student_id) {
+        Student student = studentRepository.findStudentById(student_id);
+        if (student == null) {
+            throw new ApiException("Student not found");
+        }
+        return student;
+    }
+
+    private LearningGroup findLearningGroup(Integer group_id) {
+        LearningGroup learningGroup = learningGroupRepository.findLearningGroupById(group_id);
+        if (learningGroup == null) {
+            throw new ApiException("Learning group not found");
+        }
+        return learningGroup;
+    }
+
     public TaskDTOOUT convertToDTO(Task task) {
 
         return new TaskDTOOUT(
@@ -124,6 +156,7 @@ public class TaskService {
 
     private String buildTaskPrompt(LearningGroup learningGroup, List<Task> existingTasks) {
         String difficulty = randomDifficulty();
+        int deadlineDays = mapDeadlineDays(difficulty);
 
         StringBuilder existingTasksList = new StringBuilder();
         if (!existingTasks.isEmpty()) {
@@ -137,118 +170,113 @@ public class TaskService {
         }
 
         return """
-            You are a strict professional task generator for a collaborative learning platform.
-            Your ONLY job is to generate a single realistic, time-appropriate task for the learning group below.
+    You are a strict professional task generator for a collaborative learning platform.
+    Your ONLY job is to generate a single realistic, time-appropriate task for the learning group below.
 
-            LEARNING GROUP CONTEXT:
-            - Focus Area: "%s"
-            - Description: "%s"
+    LEARNING GROUP CONTEXT:
+    - Focus Area: "%s"
+    - Description: "%s"
 
-            CRITICAL RULES:
-            - The task must be 100%% relevant to the focus area "%s"
-            - The task must align with the group description and purpose
-            - Do NOT generate generic or tutorial-style tasks
-            - The task must be a real-world, practical assignment
-            - The task scope and complexity MUST be realistically achievable within the deadline
-            - NEVER repeat or paraphrase previous tasks
+    CRITICAL RULES:
+    - The task must be 100%% relevant to the focus area "%s"
+    - The task must align with the group description and purpose
+    - Do NOT generate generic or tutorial-style tasks
+    - The task must be a real-world, practical assignment
+    - The task scope and complexity MUST be realistically achievable within the deadline
+    - NEVER repeat or paraphrase previous tasks
 
-            %s
+    %s
 
-            UNIQUENESS RULES:
-            - Generate a completely new task
-            - Do NOT reuse any previous scenario or problem type
-            - Similar meaning counts as duplication even if wording is different
-            - Prefer unexplored aspects of the focus area
+    UNIQUENESS RULES:
+    - Generate a completely new task
+    - Do NOT reuse any previous scenario or problem type
+    - Similar meaning counts as duplication even if wording is different
+    - Prefer unexplored aspects of the focus area
 
-            Today's date is: %s
+    SUBMISSION RULES:
+    - The task deliverable must be text-based ONLY
+    - Do NOT ask students to submit files, links, GitHub repos, or any external resources
+    - The student must write their answer directly as text
+    - Example of GOOD deliverable: "Write the SQL query", "Explain the steps", "Write the code snippet"
+    - Example of BAD deliverable: "Submit a GitHub link", "Upload a file", "Share your repo"
 
-            Respond with JSON only:
-            {
-              "title": "...",
-              "description": "...",
-              "difficulty": "%s",
-              "deadlineDays": <integer>
-            }
+    Today's date is: %s
+    Deadline: %d days from today
 
-            FIELD RULES:
+    Respond with JSON only:
+    {
+      "title": "...",
+      "description": "...",
+      "difficulty": "%s"
+    }
 
-            - title:
-              * max 10 words
-              * must reflect the focus area "%s"
-              * must give a clear idea of what will be done
+    FIELD RULES:
 
-            - description:
-              * max 80 words
-              * must be a concrete, actionable assignment
-              * must be realistic to complete within the deadline
-              * must clearly state what needs to produce or deliver
-              * must reflect the difficulty level and time available
-              * avoid vague instructions like "research and discuss" — be specific about the deliverable
+    - title:
+      * max 10 words
+      * must reflect the focus area "%s"
+      * must give a clear idea of what will be done
 
-            - difficulty: must be exactly: %s
-              * EASY:
-                - Simple, well-defined task
-                - Requires basic knowledge of the focus area
-                - Minimal coordination needed
-                - Example scope: read, summarize, or implement one small thing
-              * MEDIUM:
-                - Requires applying knowledge to a realistic problem
-                - Involves collaboration and decision-making
-                - Example scope: design, build, or analyze something with multiple steps
-              * HARD:
-                - Complex, open-ended challenge
-                - Requires deep expertise and strong teamwork
-                - Example scope: architect, evaluate, or solve a non-trivial real-world problem
+    - description:
+      * max 80 words
+      * must be a concrete, actionable assignment
+      * must clearly state what the student needs to WRITE or TYPE as their answer
+      * must reflect the difficulty level and time available
+      * avoid vague instructions like "research and discuss" — be specific about the deliverable
+      * do NOT mention file uploads, links, or external submissions
+      * if the answer involves code, ask the student to type the code ONLY — do NOT ask for explanations or descriptions
+      * may explore a deeper or related aspect of previous tasks without repeating them
 
-            - deadlineDays:
-              * integer only (1–7)
-              * MUST match the task scope — the task must be fully completable within this time
-              * EASY → 1–2 days (small, focused deliverable)
-              * MEDIUM → 3–4 days (multi-step work requiring collaboration)
-              * HARD → 5–7 days (complex work requiring significant effort)
-              * Do NOT assign a 1-day deadline to a task that requires significant research or implementation
-              * Do NOT assign a 7-day deadline to a simple task
+    - difficulty: must be exactly: %s
+      * EASY:
+        - Simple, well-defined task
+        - Requires basic knowledge of the focus area
+        - Minimal coordination needed
+        - Example scope: read, summarize, or implement one small thing
+      * MEDIUM:
+        - Requires applying knowledge to a realistic problem
+        - Involves collaboration and decision-making
+        - Example scope: design, build, or analyze something with multiple steps
+      * HARD:
+        - Challenging but achievable task
+        - Requires solid understanding of the focus area
+        - Example scope: implement, design, or solve a multi-step real-world problem
 
-            REALISM VALIDATION:
-            - Ask yourself: can a group realistically complete this task in the given deadlineDays?
-            - If NO → reduce scope or increase deadlineDays
-            - The description must clearly reflect a deliverable that fits within the deadline
-            - A 1-day task should have a narrow, specific deliverable
-            - A 7-day task should have a broad, complex deliverable
+    REALISM VALIDATION:
+    - Ask yourself: can a group realistically complete this task in %d days?
+    - If NO → reduce scope
 
-            OUTPUT MUST BE STRICT JSON ONLY
-            """.formatted(
+    OUTPUT MUST BE STRICT JSON ONLY
+    """.formatted(
                 learningGroup.getFocusArea(),
                 learningGroup.getDescription(),
                 learningGroup.getFocusArea(),
                 existingTasksList.toString(),
                 LocalDateTime.now(),
+                deadlineDays,
                 difficulty,
                 learningGroup.getFocusArea(),
-                difficulty
+                difficulty,
+                deadlineDays
         );
     }
+
     private Task parseTaskJson(String json) {
         Matcher titleMatcher = TITLE_PATTERN.matcher(json);
         Matcher descriptionMatcher = DESCRIPTION_PATTERN.matcher(json);
         Matcher difficultyMatcher = DIFFICULTY_PATTERN.matcher(json);
-        Matcher deadlineDaysMatcher = DEADLINE_DAYS_PATTERN.matcher(json);
 
         if (!titleMatcher.find()) throw new AiException("AI response did not contain title.");
         if (!descriptionMatcher.find()) throw new AiException("AI response did not contain description.");
         if (!difficultyMatcher.find()) throw new AiException("AI response did not contain difficulty.");
-        if (!deadlineDaysMatcher.find()) throw new AiException("AI response did not contain deadlineDays.");
 
-        int deadlineDays = Integer.parseInt(deadlineDaysMatcher.group(1));
-        if (deadlineDays < 2 || deadlineDays > 14) {
-            throw new AiException("AI generated invalid deadlineDays (must be 2–14).");
-        }
+        String difficulty = difficultyMatcher.group(1);
 
         Task task = new Task();
         task.setTitle(titleMatcher.group(1));
         task.setDescription(descriptionMatcher.group(1));
-        task.setDifficulty(difficultyMatcher.group(1));
-        task.setDeadline(LocalDateTime.now().plusDays(deadlineDays));
+        task.setDifficulty(difficulty);
+        task.setDeadline(LocalDateTime.now().plusDays(mapDeadlineDays(difficulty)));
         return task;
     }
 
@@ -257,6 +285,15 @@ public class TaskService {
             case "EASY" -> 10;
             case "MEDIUM" -> 20;
             case "HARD" -> 30;
+            default -> throw new AiException("Invalid difficulty: " + difficulty);
+        };
+    }
+
+    private int mapDeadlineDays(String difficulty) {
+        return switch (difficulty) {
+            case "EASY" -> 4;
+            case "MEDIUM" -> 9;
+            case "HARD" -> 13;
             default -> throw new AiException("Invalid difficulty: " + difficulty);
         };
     }

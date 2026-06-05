@@ -14,4 +14,16 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Integer> {
 
     @Query("select c from Challenge c where c.skill.name=?1")
     List<Challenge> findChallengesBySkillName(String skillName);
+
+    @Query("select c from Challenge c where c.skill.id=?1 and c.deadline > CURRENT_TIMESTAMP")
+    List<Challenge> availableChallengesBySkillId(Integer skillId);
+
+    @Query("select c from Challenge c where c.skill.id=?1 and c.difficulty=?2 and c.deadline > CURRENT_TIMESTAMP")
+    List<Challenge> availableChallengesBySkillIdAndDifficulty(Integer skillId, String difficulty);
+
+    @Query("select c from Challenge c where c.skill.id = ?1 and c.deadline < CURRENT_TIMESTAMP")
+    List<Challenge> closedChallengesBySkillId(Integer skillId);
+
+    @Query("select c from Challenge c where c.skill.id = ?1 and c.difficulty = ?2 and c.deadline < CURRENT_TIMESTAMP")
+    List<Challenge> closedChallengesBySkillIdAndDifficulty(Integer skillId, String difficulty);
 }

@@ -24,6 +24,8 @@ public class LearningGroupService {
     private final LearningGroupRepository learningGroupRepository;
     private final TaskService taskService;
     private final StudentRepository studentRepository;
+    private final WhatsAppService whatsAppService;
+
 
     public List<LearningGroupDTOOUT> getAllLearningGroups() {
 
@@ -142,6 +144,32 @@ public class LearningGroupService {
         student.getLearningGroups().remove(learningGroup);
         studentRepository.save(student);
 
+    }
+
+    public void inviteStudentToPrivateGroup(Integer inviter_id, Integer invited_student_id, Integer group_id) {
+
+        Student inviter = findStudent(inviter_id);
+        LearningGroup learningGroup = findLearningGroup(group_id);
+
+        if (!inviter.getLearningGroups().contains(learningGroup)) {
+            throw new ApiException("You are not a member of this group");
+        }
+
+        if (!learningGroup.getGroupType().equalsIgnoreCase("Private")) {
+            throw new ApiException("Group is public, no invite needed");
+        }
+
+        if (learningGroup.getCode() == null) {
+            throw new ApiException("Group has no code");
+        }
+
+        Student invitedStudent = findStudent(invited_student_id);
+
+        if (invitedStudent.getLearningGroups().contains(learningGroup)) {
+            throw new ApiException("Student is already in this group");
+        }
+
+        whatsAppService.sendInviteMessage(invitedStudent, learningGroup, inviter);
     }
 
     private Student findStudent(Integer student_id) {

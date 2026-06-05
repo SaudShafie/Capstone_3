@@ -2,6 +2,7 @@ package org.example.capstone_3.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Model.Mentor;
+import org.example.capstone_3.Model.MockInterviewReport;
 import org.example.capstone_3.Model.MockInterview;
 import org.example.capstone_3.Model.Student;
 import org.springframework.mail.SimpleMailMessage;
@@ -62,5 +63,46 @@ public class EmailService {
         message.setText(body);
 
         mailSender.send(message);
+    }
+
+    public void sendMockInterviewReportEmail(Student student, Mentor mentor, MockInterview mockInterview, MockInterviewReport report) {
+
+        String subject = "CareerFit Mock Interview Report";
+
+        String body = """
+            Hello %s,
+
+            Your mock interview report is ready.
+
+            Interview Details:
+            Mentor: %s
+            Interview Type: %s
+            Interview Date & Time: %s
+
+            Summary:
+            %s
+
+            Strengths:
+            %s
+
+            Weaknesses:
+            %s
+
+            Recommendations:
+            %s
+
+            CareerFit Community
+            """.formatted(
+                student.getFullName(),
+                mentor.getFullName(),
+                mockInterview.getInterviewType(),
+                mockInterview.getScheduledAt(),
+                report.getSummary(),
+                report.getStrengths(),
+                report.getWeaknesses(),
+                report.getRecommendations()
+        );
+
+        sendEmail(student.getEmail(), subject, body);
     }
 }

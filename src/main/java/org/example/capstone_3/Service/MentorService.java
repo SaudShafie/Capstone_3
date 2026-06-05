@@ -118,7 +118,6 @@ public class MentorService {
     }
 
     private MentorDTOOut toDtoOut(Mentor mentor) {
-        Boolean volunteer = mentor.getSessionPrice() != null && mentor.getSessionPrice() == 0.0;
         return new MentorDTOOut(
                 mentor.getId(),
                 mentor.getFullName(),

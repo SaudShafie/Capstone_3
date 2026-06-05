@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MockInterviewDTOOUT {
+public class MentorMockInterviewDTOOUT {
 
     private Integer id;
     private String interviewMode;
@@ -18,9 +18,15 @@ public class MockInterviewDTOOUT {
     private LocalDateTime scheduledAt;
     private Integer durationMinutes;
     private String status;
+    private String suggestedQuestions;
     private String url;
     private String meetingProvider;
     private LocalDateTime createdAt;
+
     private Integer studentId;
+    private String studentName;
+    private String studentTargetRole;
+
     private Integer mentorId;
+    private String mentorName;
 }

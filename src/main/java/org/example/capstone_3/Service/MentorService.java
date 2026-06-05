@@ -32,10 +32,6 @@ public class MentorService {
         mentor.setAcceptedByAdmin(false);
         mentor.setCreatedAt(LocalDateTime.now());
 
-        if (Boolean.TRUE.equals(dto.getVolunteer())) {
-            mentor.setSessionPrice(0.0);
-        }
-
         mentorRepository.save(mentor);
     }
 
@@ -93,10 +89,6 @@ public class MentorService {
         }
 
         applyDto(mentor, dto);
-
-        if (Boolean.TRUE.equals(dto.getVolunteer())) {
-            mentor.setSessionPrice(0.0);
-        }
 
         mentorRepository.save(mentor);
     }

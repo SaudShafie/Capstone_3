@@ -11,14 +11,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TaskDTOOUT {
     private Integer id;
-
     private String title;
-
     private String description;
-
     private String difficulty;
-
     private LocalDateTime deadline;
-
-    private LocalDateTime createdAt;
 }

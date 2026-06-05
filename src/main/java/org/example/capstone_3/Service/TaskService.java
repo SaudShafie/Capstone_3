@@ -12,7 +12,6 @@ import org.example.capstone_3.Model.Task;
 import org.example.capstone_3.Repository.LearningGroupRepository;
 import org.example.capstone_3.Repository.StudentRepository;
 import org.example.capstone_3.Repository.TaskRepository;
-import org.example.capstone_3.Repository.TaskSubmissionRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -115,6 +114,26 @@ public class TaskService {
         return unsubmittedTasks;
     }
 
+    public List<TaskDTOOUT> groupOldTasks(Integer learningGroupId){
+        LearningGroup learningGroup = findLearningGroup(learningGroupId);
+
+        List<TaskDTOOUT> oldTasks = new ArrayList<>();
+        for(Task task: taskRepository.groupOldTasks(learningGroupId)){
+            oldTasks.add(convertToDTO(task));
+        }
+        return oldTasks;
+    }
+
+    public List<TaskDTOOUT> groupAvailableTasks(Integer learningGroupId){
+        LearningGroup learningGroup = findLearningGroup(learningGroupId);
+
+        List<TaskDTOOUT> oldTasks = new ArrayList<>();
+        for(Task task: taskRepository.groupOldTasks(learningGroupId)){
+            oldTasks.add(convertToDTO(task));
+        }
+        return oldTasks;
+    }
+
     private Student findStudent(Integer student_id) {
         Student student = studentRepository.findStudentById(student_id);
         if (student == null) {
@@ -138,8 +157,7 @@ public class TaskService {
                 task.getTitle(),
                 task.getDescription(),
                 task.getDifficulty(),
-                task.getDeadline(),
-                task.getCreatedAt()
+                task.getDeadline()
         );
     }
 
@@ -291,9 +309,9 @@ public class TaskService {
 
     private int mapDeadlineDays(String difficulty) {
         return switch (difficulty) {
-            case "EASY" -> 4;
-            case "MEDIUM" -> 9;
-            case "HARD" -> 13;
+            case "EASY" -> 2;
+            case "MEDIUM" -> 5;
+            case "HARD" -> 7;
             default -> throw new AiException("Invalid difficulty: " + difficulty);
         };
     }

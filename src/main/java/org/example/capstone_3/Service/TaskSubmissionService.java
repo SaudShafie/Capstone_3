@@ -60,6 +60,8 @@ public class TaskSubmissionService {
         Task task = findTask(taskId);
         Student student = findStudent(studentId);
 
+        boolean alreadyEarned = taskSubmissionRepository.findPassingSubmission(taskId, studentId, 75) != null;
+
         String[] result = fetchEvaluationFromAi(dto.getAnswerText(), task);
         int score = Integer.parseInt(result[0]);
 
@@ -71,7 +73,7 @@ public class TaskSubmissionService {
         submission.setTask(task);
         submission.setStudent(student);
 
-        if (score >= 75 && LocalDateTime.now().isBefore(task.getDeadline())) {
+        if (!alreadyEarned && score >= 75 && LocalDateTime.now().isBefore(task.getDeadline())) {
             student.setXp(student.getXp() + task.getPoints());
             studentRepository.save(student);
         }
@@ -85,22 +87,18 @@ public class TaskSubmissionService {
         Task task = submission.getTask();
         Student student = submission.getStudent();
 
+        boolean alreadyEarned = taskSubmissionRepository
+                .findPassingSubmission(task.getId(), student.getId(), 75) != null;
+
         String[] result = fetchEvaluationFromAi(dto.getAnswerText(), task);
         int newScore = Integer.parseInt(result[0]);
-
-        // reverse old XP if previous submission earned it
-        boolean previousEarnedXp = submission.getScore() >= 75 &&
-                (task.getDeadline() == null || submission.getSubmittedAt().isBefore(task.getDeadline()));
-        if (previousEarnedXp) {
-            student.setXp(student.getXp() - task.getPoints());
-        }
 
         submission.setAnswerText(dto.getAnswerText());
         submission.setSubmittedAt(LocalDateTime.now());
         submission.setScore(newScore);
         submission.setAiFeedback(result[1]);
 
-        if (newScore >= 75 && LocalDateTime.now().isBefore(task.getDeadline())) {
+        if (!alreadyEarned && newScore >= 75 && LocalDateTime.now().isBefore(task.getDeadline())) {
             student.setXp(student.getXp() + task.getPoints());
         }
 
@@ -111,6 +109,17 @@ public class TaskSubmissionService {
     public void deleteTaskSubmission(Integer id) {
         TaskSubmission submission = findTaskSubmission(id);
         taskSubmissionRepository.delete(submission);
+    }
+
+    public List<TaskSubmissionDTOOUT> studentTaskSubmissions(Integer studentId, Integer taskId) {
+        findStudent(studentId);
+        findTask(taskId);
+
+        List<TaskSubmissionDTOOUT> submissions = new ArrayList<>();
+        for (TaskSubmission submission : taskSubmissionRepository.findByTaskIdAndStudentId(taskId, studentId)) {
+            submissions.add(convertToDTO(submission));
+        }
+        return submissions;
     }
 
     private Task findTask(Integer taskId) {

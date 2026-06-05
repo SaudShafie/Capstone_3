@@ -50,7 +50,7 @@ public class ChallengeAttemptService {
         challengeAttempt.setCorrect(isCorrect);
         challengeAttempt.setSubmittedAt(LocalDateTime.now());
 
-        if (isCorrect && challenge.getDeadline().isBefore(LocalDateTime.now())) {
+        if (isCorrect) {
             student.setXp(student.getXp() + challenge.getPoints());
             studentRepository.save(student);
         }
@@ -70,7 +70,6 @@ public class ChallengeAttemptService {
         return challengeAttemptRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    //Useless
     public void update(Integer id, ChallengeAttemptDTOIN dto) {
         ChallengeAttempt challengeAttempt = challengeAttemptRepository.findChallengeAttemptById(id);
         if (challengeAttempt == null) {
@@ -122,7 +121,6 @@ public class ChallengeAttemptService {
         challengeAttempt.setSubmittedAnswer(dto.getSubmittedAnswer());
     }
 
-
     private Student findStudent(Integer studentId) {
         if (studentId == null) {
             return null;
@@ -161,6 +159,7 @@ public class ChallengeAttemptService {
         String json = aiService.ask(prompt);
         return parseIsCorrect(json);
     }
+
     private String buildIsCorrectPrompt(String submittedAnswer, String correctAnswer) {
         return """
         You are a strict but fair answer evaluator for a career development platform

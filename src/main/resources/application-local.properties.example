@@ -27,8 +27,8 @@ spring.datasource.password=
 # spring.mail.properties.mail.smtp.auth=true
 # spring.mail.properties.mail.smtp.starttls.enable=true
 
-# --- Twilio WhatsApp (optional; app starts without these) ---
-# twilio.account-sid=
-# twilio.auth-token=
-# twilio.whatsapp-from=whatsapp:+14155238886
+# --- UltraMsg WhatsApp (required for WhatsApp notifications) ---
+# ultramsg.api-url=https://api.ultramsg.com/instance179524
+# ultramsg.token=your-ultramsg-token
+# logging.level.org.example.capstone_3.Service.WhatsAppService=INFO
 

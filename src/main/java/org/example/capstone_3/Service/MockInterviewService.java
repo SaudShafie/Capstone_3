@@ -136,6 +136,12 @@ public class MockInterviewService {
                 mentor,
                 mockInterview
         );
+
+        whatsAppService.sendMentorInterviewScheduledNotifications(
+                mockInterview.getStudent(),
+                mentor,
+                mockInterview
+        );
     }
 
     public List<MentorMockInterviewDTOOUT> getPendingMentorInterviews(Integer mentorId) {

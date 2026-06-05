@@ -13,18 +13,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class WhatsAppService {
 
-    @Value("${twilio.account-sid}")
+    @Value("${twilio.account-sid:}")
     private String accountSid;
 
-    @Value("${twilio.auth-token}")
+    @Value("${twilio.auth-token:}")
     private String authToken;
 
-    @Value("${twilio.whatsapp-from}")
+    @Value("${twilio.whatsapp-from:}")
     private String from;
 
     public void sendWhatsApp(String toPhone, String message) {
 
         if (toPhone == null || toPhone.isBlank()) {
+            return;
+        }
+
+        if (!isConfigured()) {
+            System.out.println("Twilio WhatsApp is not configured; skipping message to " + toPhone);
             return;
         }
 
@@ -49,7 +54,7 @@ public class WhatsAppService {
                 + learningGroup.getName() + "\n"
                 + "Focus Area: " + learningGroup.getFocusArea() + "\n"
                 + "Use this code to join: " + learningGroup.getCode() + "\n\n"
-                + "CareerFit Community";
+                + "Khutaa";
 
         sendWhatsApp(invitedStudent.getPhoneNumber(), message);
     }
@@ -63,8 +68,8 @@ public class WhatsAppService {
                 + "Interview Type: " + mockInterview.getInterviewType() + "\n"
                 + "Date & Time: " + mockInterview.getScheduledAt() + "\n"
                 + "Duration: " + mockInterview.getDurationMinutes() + " minutes\n\n"
-                + "Please open CareerFit Community and review the request.\n\n"
-                + "CareerFit Community";
+                + "Please open Khutaa and review the request.\n\n"
+                + "Khutaa";
 
         sendWhatsApp(mentor.getPhoneNumber(), message);
     }
@@ -79,7 +84,7 @@ public class WhatsAppService {
                 + "Duration: " + mockInterview.getDurationMinutes() + " minutes\n"
                 + "Meeting Link: " + mockInterview.getUrl() + "\n\n"
                 + "Good luck.\n\n"
-                + "CareerFit Community";
+                + "Khutaa";
 
         sendWhatsApp(student.getPhoneNumber(), message);
     }
@@ -95,8 +100,14 @@ public class WhatsAppService {
                 + "Date & Time: " + mockInterview.getScheduledAt() + "\n"
                 + "Duration: " + mockInterview.getDurationMinutes() + " minutes\n"
                 + "Meeting Link: " + mockInterview.getUrl() + "\n\n"
-                + "CareerFit Community";
+                + "Khutaa";
 
         sendWhatsApp(mentor.getPhoneNumber(), message);
+    }
+
+    private boolean isConfigured() {
+        return accountSid != null && !accountSid.isBlank()
+                && authToken != null && !authToken.isBlank()
+                && from != null && !from.isBlank();
     }
 }

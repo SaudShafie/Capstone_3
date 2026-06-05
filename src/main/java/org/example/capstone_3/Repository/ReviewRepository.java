@@ -14,4 +14,6 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     List<Review> findReviewsByMentorId(Integer mentorId);
 
     Review findReviewByMockInterviewId(Integer mockInterviewId);
+
+    List<Review> findReviewsByStudentId(Integer studentId);
 }

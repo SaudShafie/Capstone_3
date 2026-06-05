@@ -27,8 +27,8 @@ public class JobAnalysis {
     @Column(columnDefinition = "text not null")
     private String jobDescription;
 
-    @Column(columnDefinition = "text")
-    private String requiredSkillsText;
+    @Column(name = "required_skills_text", columnDefinition = "text")
+    private String strengths;
 
     @Column(columnDefinition = "text")
     private String missingSkillsText;
@@ -36,11 +36,14 @@ public class JobAnalysis {
     @Column(columnDefinition = "int not null")
     private Integer matchScore;
 
+    @Column(columnDefinition = "int")
+    private Integer readinessScore;
+
     @Column(columnDefinition = "text not null")
     private String summary;
 
-    @Column(columnDefinition = "text not null")
-    private String improvements;
+    @Column(name = "improvements", columnDefinition = "text not null")
+    private String weaknesses;
 
     @Column(columnDefinition = "text")
     private String recommendations;

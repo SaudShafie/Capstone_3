@@ -43,4 +43,9 @@ public class TaskController {
         taskService.deleteTask(id);
         return ResponseEntity.ok(new ApiResponse("Task deleted successfully"));
     }
+
+    @GetMapping("/{learningGroupId}/unsubmitted-tasks/{studentId}")
+    public ResponseEntity<?> unsubmittedTasksForStudent(@PathVariable Integer learningGroupId, @PathVariable Integer studentId) {
+        return ResponseEntity.ok(taskService.unsubmittedTasksForStudent(learningGroupId , studentId));
+    }
 }

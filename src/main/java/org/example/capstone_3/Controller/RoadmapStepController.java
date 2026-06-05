@@ -42,14 +42,12 @@ public class RoadmapStepController {
         return ResponseEntity.ok(new ApiResponse("Roadmap step deleted successfully"));
     }
 
-    //Shahad
     @PutMapping("/complete/{student_id}/{roadmap_id}/{step_id}")
     public ResponseEntity<?> completeStep(@PathVariable Integer student_id, @PathVariable Integer roadmap_id, @PathVariable Integer step_id) {
         roadmapStepService.completeStep(student_id, roadmap_id, step_id);
         return ResponseEntity.ok(new ApiResponse("Step completed successfully"));
     }
 
-    //Shahad
     @GetMapping("/next/{student_id}/{roadmap_id}")
     public ResponseEntity<?> getNextStep(@PathVariable Integer student_id, @PathVariable Integer roadmap_id) {
         return ResponseEntity.ok(roadmapStepService.getNextStep(student_id, roadmap_id));

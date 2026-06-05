@@ -42,4 +42,9 @@ public class ChallengeAttemptController {
         challengeAttemptService.delete(id);
         return ResponseEntity.ok().body(new ApiResponse("Challenge attempt has been deleted successfully"));
     }
+
+    @GetMapping("/student-attempts/{studentId}/{challengeId}")
+    public ResponseEntity<?> studentAttemptsForChallenge(@PathVariable Integer studentId, @PathVariable Integer challengeId) {
+        return ResponseEntity.ok(challengeAttemptService.studentAttemptsForChallenge(studentId, challengeId));
+    }
 }

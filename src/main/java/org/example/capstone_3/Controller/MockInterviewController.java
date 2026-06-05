@@ -27,13 +27,15 @@ public class MockInterviewController {
         return ResponseEntity.ok(mockInterviewService.getById(id));
     }
 
-    // =========================
-    // MENTOR FLOW
-    // =========================
-
     @GetMapping("/mentor/pending/{mentorId}")
     public ResponseEntity<?> getPendingMentorInterviews(@PathVariable Integer mentorId) {
         return ResponseEntity.ok(mockInterviewService.getPendingMentorInterviews(mentorId));
+    }
+
+    @GetMapping("/mentor/get/{mentorId}/{mockInterviewId}")
+    public ResponseEntity<?> getMentorInterviewDetails(@PathVariable Integer mentorId,
+                                                       @PathVariable Integer mockInterviewId) {
+        return ResponseEntity.ok(mockInterviewService.getMentorInterviewDetails(mentorId, mockInterviewId));
     }
 
     @PostMapping("/mentor/add/{studentId}/{mentorId}")
@@ -51,42 +53,29 @@ public class MockInterviewController {
         return ResponseEntity.ok().body(new ApiResponse("Mock interview has been scheduled successfully"));
     }
 
-    @PutMapping("/mentor/complete/{mentorId}/{mockInterviewId}")
-    public ResponseEntity<?> completeMentorInterview(@PathVariable Integer mentorId,
-                                                     @PathVariable Integer mockInterviewId,
-                                                     @RequestParam String feedback,
-                                                     @RequestParam Integer score) {
-        mockInterviewService.completeMentorInterview(mentorId, mockInterviewId, feedback, score);
-        return ResponseEntity.ok().body(new ApiResponse("Mock interview has been completed successfully"));
-    }
-
-    // =========================
-    // AI FLOW
-    // =========================
-
     @PostMapping("/ai/add/{studentId}")
     public ResponseEntity<?> createAiInterview(@PathVariable Integer studentId,
                                                @RequestBody @Valid AiMockInterviewDTOIN dto) {
-        mockInterviewService.createAiInterview(studentId, dto);
-        return ResponseEntity.ok().body(new ApiResponse("AI mock interview has been created successfully"));
+        return ResponseEntity.ok(mockInterviewService.createAiInterview(studentId, dto));
+    }
+
+    @GetMapping("/ai/questions/{studentId}/{mockInterviewId}")
+    public ResponseEntity<?> getAiInterviewQuestions(@PathVariable Integer studentId,
+                                                     @PathVariable Integer mockInterviewId) {
+        return ResponseEntity.ok(mockInterviewService.getAiInterviewQuestions(studentId, mockInterviewId));
     }
 
     @PutMapping("/ai/submit/{studentId}/{mockInterviewId}")
     public ResponseEntity<?> submitAiInterviewAnswers(@PathVariable Integer studentId,
                                                       @PathVariable Integer mockInterviewId,
                                                       @RequestBody @Valid AiInterviewAnswerDTOIN dto) {
-        mockInterviewService.submitAiInterviewAnswers(studentId, mockInterviewId, dto);
-        return ResponseEntity.ok().body(new ApiResponse("AI mock interview answers have been evaluated successfully"));
+        return ResponseEntity.ok(mockInterviewService.submitAiInterviewAnswers(studentId, mockInterviewId, dto));
     }
 
     @GetMapping("/ai/student/{studentId}")
     public ResponseEntity<?> getStudentAiInterviews(@PathVariable Integer studentId) {
         return ResponseEntity.ok(mockInterviewService.getStudentAiInterviews(studentId));
     }
-
-    // =========================
-    // DELETE
-    // =========================
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteMockInterview(@PathVariable Integer id) {

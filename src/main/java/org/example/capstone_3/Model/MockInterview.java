@@ -64,6 +64,9 @@ public class MockInterview {
     @Column(columnDefinition = "varchar(255)")
     private String externalMeetingId;
 
+    @Column(columnDefinition = "boolean not null")
+    private Boolean whatsappReminderSent;
+
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime createdAt;
 

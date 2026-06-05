@@ -15,6 +15,4 @@ public class ChallengeAttemptDTOOUT {
     private String submittedAnswer;
     private Boolean correct;
     private LocalDateTime submittedAt;
-    private Integer studentId;
-    private Integer challengeId;
 }

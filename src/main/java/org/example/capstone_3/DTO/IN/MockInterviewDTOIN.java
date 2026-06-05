@@ -20,10 +20,10 @@ public class MockInterviewDTOIN {
     private String description;
 
     @NotNull(message = "Scheduled date and time are required")
-    @Future(message = "Scheduled date must be in the future")
+//    @Future(message = "Scheduled date must be in the future")
     private LocalDateTime scheduledAt;
 
     @NotNull(message = "Duration is required")
-    @Min(value = 15, message = "Duration must be at least 15 minutes")
+    @Min(value = 1, message = "Duration must be at least 15 minutes")
     private Integer durationMinutes;
 }

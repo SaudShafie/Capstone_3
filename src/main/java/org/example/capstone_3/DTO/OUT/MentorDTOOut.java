@@ -11,6 +11,8 @@ public class MentorDTOOut {
 
     private String fullName;
 
+    private String phoneNumber;
+
     private String email;
 
     private String jobTitle;
@@ -22,8 +24,6 @@ public class MentorDTOOut {
     private Integer yearsExperience;
 
     private String bio;
-
-    private Boolean volunteer;
 
     private Double sessionPrice;
 

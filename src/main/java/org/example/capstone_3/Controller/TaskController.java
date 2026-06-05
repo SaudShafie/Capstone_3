@@ -27,8 +27,8 @@ public class TaskController {
     }
 
     @PostMapping("/add/{learningGroupId}")
-    public ResponseEntity<?> add(@PathVariable Integer learningGroupId, @RequestBody @Valid TaskDTOIN dto) {
-        taskService.addTask(learningGroupId, dto);
+    public ResponseEntity<?> add(@PathVariable Integer learningGroupId) {
+        taskService.addTask(learningGroupId);
         return ResponseEntity.ok(new ApiResponse("Task created successfully"));
     }
 
@@ -42,5 +42,10 @@ public class TaskController {
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         taskService.deleteTask(id);
         return ResponseEntity.ok(new ApiResponse("Task deleted successfully"));
+    }
+
+    @GetMapping("/{learningGroupId}/unsubmitted-tasks/{studentId}")
+    public ResponseEntity<?> unsubmittedTasksForStudent(@PathVariable Integer learningGroupId, @PathVariable Integer studentId) {
+        return ResponseEntity.ok(taskService.unsubmittedTasksForStudent(learningGroupId , studentId));
     }
 }

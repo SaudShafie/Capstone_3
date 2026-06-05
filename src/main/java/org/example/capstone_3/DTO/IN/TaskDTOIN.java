@@ -23,7 +23,7 @@ public class TaskDTOIN {
 
     @NotNull(message = "Deadline is required")
     @Future(message = "Deadline must be in the future")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
     private LocalDateTime deadline;
 
 }

@@ -8,6 +8,8 @@ import org.example.capstone_3.Service.JobAnalysisService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
+
 @RestController
 @RequestMapping("/api/v1/job-analysis")
 @RequiredArgsConstructor
@@ -15,26 +17,33 @@ public class JobAnalysisController {
 
     private final JobAnalysisService jobAnalysisService;
 
-//    @GetMapping("/get")
-//    public ResponseEntity<?> get() {
-//        return ResponseEntity.ok(jobAnalysisService.getAll());
-//    }
-
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getJobAnalysisById(@PathVariable Integer id) {
         return ResponseEntity.ok(jobAnalysisService.getById(id));
     }
 
-    @PostMapping("/add/{studentId}")
-    public ResponseEntity<?> saveJobAnalysis(@PathVariable Integer studentId,@RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
-        jobAnalysisService.addJobAnalysis(studentId, jobAnalysisDTOIn);
-        return ResponseEntity.ok().body(new ApiResponse("Job analysis has been saved successfully"));
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<?> getJobAnalysesByStudentId(@PathVariable Integer studentId) {
+        return ResponseEntity.ok(jobAnalysisService.getByStudentId(studentId));
+
     }
 
+    @PostMapping("/add/{studentId}")
+    public ResponseEntity<?> saveJobAnalysis(
+            @PathVariable Integer studentId,
+            @RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
+        return ResponseEntity.ok(jobAnalysisService.addJobAnalysis(studentId, jobAnalysisDTOIn));
+
+    }
+
+
+
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateJobAnalysis(@PathVariable Integer id, @RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
-        jobAnalysisService.updateJobAnalysis(id, jobAnalysisDTOIn);
-        return ResponseEntity.ok().body(new ApiResponse("Job analysis has been updated successfully"));
+    public ResponseEntity<?> updateJobAnalysis(
+            @PathVariable Integer id,
+            @RequestBody @Valid JobAnalysisDTOIn jobAnalysisDTOIn) {
+        return ResponseEntity.ok(jobAnalysisService.updateJobAnalysis(id, jobAnalysisDTOIn));
+
     }
 
     @DeleteMapping("/delete/{id}")
@@ -42,4 +51,7 @@ public class JobAnalysisController {
         jobAnalysisService.delete(id);
         return ResponseEntity.ok().body(new ApiResponse("Job analysis has been deleted successfully"));
     }
+
 }
+
+

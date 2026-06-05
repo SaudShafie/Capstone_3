@@ -8,12 +8,11 @@ import org.example.capstone_3.Model.Mentor;
 import org.example.capstone_3.Model.MockInterview;
 import org.example.capstone_3.Model.MockInterviewReport;
 import org.example.capstone_3.Model.Student;
-import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.time.format.DateTimeFormatter;
 
-@Service
+@org.springframework.stereotype.Service
 @RequiredArgsConstructor
 public class MockInterviewReportPdfService {
 

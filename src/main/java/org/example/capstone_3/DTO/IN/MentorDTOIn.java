@@ -51,9 +51,6 @@ public class MentorDTOIn {
     @Size(max = 1000, message = "Bio must not exceed 1000 characters")
     private String bio;
 
-    @NotNull(message = "Volunteer status is required")
-    private Boolean volunteer;
-
     @PositiveOrZero(message = "Session price must be 0 or more")
     private Double sessionPrice;
 }

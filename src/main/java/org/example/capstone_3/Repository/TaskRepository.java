@@ -21,5 +21,7 @@ public interface TaskRepository extends JpaRepository<Task,Integer> {
     List<Task> groupOldTasks (Integer groupId);
 
     @Query("select t from Task t where t.learningGroup.id=?1 and t.deadline > CURRENT_TIMESTAMP")
-    List<Task> groupAvailableTasks (Integer groupId);
+    Task groupAvailableTasks (Integer groupId);
+
+    List<Task> findTasksByWhatsappReminderSentFalse();
 }

@@ -3,10 +3,7 @@ package org.example.capstone_3.Service;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
-import org.example.capstone_3.Model.LearningGroup;
-import org.example.capstone_3.Model.Mentor;
-import org.example.capstone_3.Model.MockInterview;
-import org.example.capstone_3.Model.Student;
+import org.example.capstone_3.Model.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -98,5 +95,18 @@ public class WhatsAppService {
                 + "CareerFit Community";
 
         sendWhatsApp(mentor.getPhoneNumber(), message);
+    }
+
+    public void sendTaskDeadlineReminderToStudent(Student student, Task task) {
+
+        String message = "Hello " + student.getFullName() + "\n\n"
+                + "Reminder: Task deadline is tomorrow!\n\n"
+                + "Task Details:\n"
+                + "Title: " + task.getTitle() + "\n"
+                + "Difficulty: " + task.getDifficulty() + "\n"
+                + "Please make sure to submit on time.\n\n"
+                + "CareerFit Community";
+
+        sendWhatsApp(student.getPhoneNumber(), message);
     }
 }

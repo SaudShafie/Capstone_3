@@ -24,10 +24,5 @@ public class MockInterviewDTOIN {
     private LocalDateTime scheduledAt;
 
     @NotNull(message = "Duration is required")
-<<<<<<< HEAD
-//    @Min(value = 15, message = "Duration must be at least 15 minutes")
-=======
-    @Min(value = 1, message = "Duration must be at least 15 minutes")
->>>>>>> cd2506de3f0b6197e5d69249f722a5ed8af607e6
     private Integer durationMinutes;
 }

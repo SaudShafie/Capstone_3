@@ -12,6 +12,8 @@ import org.example.capstone_3.Model.Task;
 import org.example.capstone_3.Repository.LearningGroupRepository;
 import org.example.capstone_3.Repository.StudentRepository;
 import org.example.capstone_3.Repository.TaskRepository;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,6 +25,7 @@ import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
+@EnableScheduling
 public class TaskService {
     // Add these patterns at the top of the class
     private static final Pattern TITLE_PATTERN =
@@ -37,6 +40,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final LearningGroupRepository learningGroupRepository;
     private final StudentRepository studentRepository;
+    private final EmailService emailService;
     private final AiService aiService;
 
     public List<TaskDTOOUT> getAllTasks() {
@@ -71,6 +75,20 @@ public class TaskService {
         task.setCreatedAt(LocalDateTime.now());
         task.setLearningGroup(learningGroup);
         taskRepository.save(task);
+
+        List<Student> members = studentRepository.findStudentsByGroupId(learningGroupId);
+        for(Student student: members){
+            emailService.sendTaskPublishedToStudent(student,task);
+        }
+    }
+
+    //@Scheduled(cron = "0 0 10 * * SUN")
+    @Scheduled(cron = "0 45 21 * * FRI")
+    public void aiPublish(){
+        List<LearningGroup> learningGroups = learningGroupRepository.findAll();
+        for(LearningGroup group: learningGroups){
+            addTask(group.getId());
+        }
     }
 
     public void updateTask(Integer id, TaskDTOIN dto) {
@@ -124,14 +142,17 @@ public class TaskService {
         return oldTasks;
     }
 
-    public List<TaskDTOOUT> groupAvailableTasks(Integer learningGroupId){
+    public TaskDTOOUT groupAvailableTasks(Integer learningGroupId){
         LearningGroup learningGroup = findLearningGroup(learningGroupId);
 
-        List<TaskDTOOUT> oldTasks = new ArrayList<>();
-        for(Task task: taskRepository.groupOldTasks(learningGroupId)){
-            oldTasks.add(convertToDTO(task));
-        }
-        return oldTasks;
+        Task available = taskRepository.groupAvailableTasks(learningGroup.getId());
+        return new TaskDTOOUT(
+                available.getId(),
+                available.getTitle(),
+                available.getDescription(),
+                available.getDifficulty(),
+                available.getDeadline()
+        );
     }
 
     private Student findStudent(Integer student_id) {

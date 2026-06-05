@@ -17,15 +17,6 @@ public class JobAnalysisController {
 
     private final JobAnalysisService jobAnalysisService;
 
-<<<<<<< HEAD
-=======
-//    @GetMapping("/get")
-//    public ResponseEntity<?> get() {
-//        return ResponseEntity.ok(jobAnalysisService.getAll());
-//    }
-
-
->>>>>>> cd2506de3f0b6197e5d69249f722a5ed8af607e6
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getJobAnalysisById(@PathVariable Integer id) {
         return ResponseEntity.ok(jobAnalysisService.getById(id));
@@ -37,7 +28,6 @@ public class JobAnalysisController {
 
     }
 
-<<<<<<< HEAD
     @PostMapping("/add/{studentId}")
     public ResponseEntity<?> saveJobAnalysis(
             @PathVariable Integer studentId,
@@ -45,10 +35,6 @@ public class JobAnalysisController {
         return ResponseEntity.ok(jobAnalysisService.addJobAnalysis(studentId, jobAnalysisDTOIn));
 
     }
-
-=======
->>>>>>> cd2506de3f0b6197e5d69249f722a5ed8af607e6
-
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateJobAnalysis(
@@ -65,8 +51,4 @@ public class JobAnalysisController {
     }
 
 }
-<<<<<<< HEAD
 
-
-=======
->>>>>>> cd2506de3f0b6197e5d69249f722a5ed8af607e6

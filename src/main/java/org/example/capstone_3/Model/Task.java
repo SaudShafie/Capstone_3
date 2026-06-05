@@ -46,4 +46,7 @@ public class Task {
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<TaskSubmission> taskSubmissions;
+
+    @Column(columnDefinition = "boolean default false")
+    private Boolean whatsappReminderSent = false;
 }

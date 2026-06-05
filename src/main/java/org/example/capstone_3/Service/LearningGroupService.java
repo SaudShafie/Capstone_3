@@ -3,8 +3,8 @@ package org.example.capstone_3.Service;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.LearningGroupDTOIN;
-import org.example.capstone_3.DTO.OUT.GroupMemberDTOOUT;
 import org.example.capstone_3.DTO.OUT.LearningGroupDTOOUT;
+import org.example.capstone_3.DTO.OUT.StudentSummaryDTOOut;
 import org.example.capstone_3.DTO.OUT.TaskDTOOUT;
 import org.example.capstone_3.Model.LearningGroup;
 import org.example.capstone_3.Model.Student;
@@ -172,10 +172,10 @@ public class LearningGroupService {
         whatsAppService.sendInviteMessage(invitedStudent, learningGroup, inviter);
     }
 
-    public List<GroupMemberDTOOUT> groupMembers(Integer learningGroupId){
-        List<GroupMemberDTOOUT> members = new ArrayList<>();
+    public List<StudentSummaryDTOOut> groupMembers(Integer learningGroupId){
+        List<StudentSummaryDTOOut> members = new ArrayList<>();
         for(Student student: studentRepository.findStudentsByGroupId(learningGroupId)){
-            members.add(convertToGroupMemberDTOOUT(student));
+            members.add(convertToStudentSummaryDTOOut(student));
         }
         return members;
     }
@@ -190,8 +190,8 @@ public class LearningGroupService {
         return groups;
     }
 
-    public GroupMemberDTOOUT convertToGroupMemberDTOOUT(Student student){
-        return new GroupMemberDTOOUT(student.getId(),student.getFullName());
+    public StudentSummaryDTOOut convertToStudentSummaryDTOOut(Student student){
+        return new StudentSummaryDTOOut(student.getId(),student.getFullName());
     }
 
     private Student findStudent(Integer student_id) {

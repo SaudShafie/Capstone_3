@@ -1,10 +1,7 @@
 package org.example.capstone_3.Service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.capstone_3.Model.Mentor;
-import org.example.capstone_3.Model.MockInterviewReport;
-import org.example.capstone_3.Model.MockInterview;
-import org.example.capstone_3.Model.Student;
+import org.example.capstone_3.Model.*;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -101,6 +98,39 @@ public class EmailService {
                 report.getStrengths(),
                 report.getWeaknesses(),
                 report.getRecommendations()
+        );
+
+        sendEmail(student.getEmail(), subject, body);
+    }
+
+    public void sendTaskPublishedToStudent(Student student, Task task) {
+
+        String subject = "CareerFit New Task Published";
+
+        String body = """
+            Hello %s,
+
+            A new task has been published in %s group.
+
+            Task Details:
+            Title:
+            %s
+            
+            Difficulty:
+            %s
+            
+            Deadline:
+            %s
+
+            Make sure to submit before the deadline.
+
+            CareerFit Community
+            """.formatted(
+                student.getFullName(),
+                task.getLearningGroup().getName(),
+                task.getTitle(),
+                task.getDifficulty(),
+                task.getDeadline()
         );
 
         sendEmail(student.getEmail(), subject, body);

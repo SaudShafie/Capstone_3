@@ -4,9 +4,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiResponse;
 import org.example.capstone_3.DTO.IN.TaskSubmissionDTOIN;
+import org.example.capstone_3.DTO.OUT.TaskSubmissionDTOOUT;
 import org.example.capstone_3.Service.TaskSubmissionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/task-submission")
@@ -40,5 +43,10 @@ public class TaskSubmissionController {
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         taskSubmissionService.deleteTaskSubmission(id);
         return ResponseEntity.ok(new ApiResponse("Submission deleted successfully"));
+    }
+
+    @GetMapping("/student/{studentId}/task/{taskId}/submissions")
+    public ResponseEntity<?> studentTaskSubmissions(@PathVariable Integer studentId, @PathVariable Integer taskId) {
+        return ResponseEntity.ok(taskSubmissionService.studentTaskSubmissions(studentId, taskId));
     }
 }

@@ -9,6 +9,7 @@ import org.example.capstone_3.DTO.OUT.ChallengeDTOOUT;
 import org.example.capstone_3.Model.Admin;
 import org.example.capstone_3.Model.Challenge;
 import org.example.capstone_3.Model.Skill;
+import org.example.capstone_3.Repository.AdminRepository;
 import org.example.capstone_3.Repository.ChallengeRepository;
 import org.example.capstone_3.Repository.SkillRepository;
 import org.springframework.stereotype.Service;
@@ -37,12 +38,10 @@ public class ChallengeService {
 
     private final ChallengeRepository challengeRepository;
     private final SkillRepository skillRepository;
-    private final AdminService adminService;
     private final AiService aiService;
 
     public void create(ChallengeDTOIN dto) {
         Skill skill = findSkillByName(dto.getSkillName());
-
 
         Challenge challenge = fetchChallengeFromAi(dto.getSkillName());
 
@@ -129,7 +128,6 @@ public class ChallengeService {
     }
 
     private ChallengeDTOOUT toDtoOut(Challenge challenge) {
-        Integer skillId = challenge.getSkill() != null ? challenge.getSkill().getId() : null;
         return new ChallengeDTOOUT(
                 challenge.getId(),
                 challenge.getTitle(),
@@ -231,7 +229,7 @@ public class ChallengeService {
                   "title": "write actual title here",
                   "question": "write actual question here",
                   "correctAnswer": "write actual answer here",
-                  "difficulty": "%s",
+                  "difficulty": "%s"
                 }
 
             FIELD RULES:
@@ -301,7 +299,7 @@ public class ChallengeService {
         challenge.setTitle(titleMatcher.group(1));
         challenge.setQuestion(questionMatcher.group(1));
         challenge.setCorrectAnswer(correctAnswerMatcher.group(1));
-
+        challenge.setDifficulty(difficulty);
         return challenge;
     }
 

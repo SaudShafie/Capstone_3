@@ -60,6 +60,7 @@ public class MockInterviewService {
     private final StudentProfilePromptHelper studentProfilePromptHelper;
     private final MeetingService meetingService;
     private final EmailService emailService;
+    private final WhatsAppService whatsAppService;
 
     public void createMentorInterview(Integer studentId, Integer mentorId, MockInterviewDTOIN dto) {
 
@@ -89,8 +90,15 @@ public class MockInterviewService {
         mockInterview.setUrl(null);
         mockInterview.setMeetingProvider(null);
         mockInterview.setExternalMeetingId(null);
+        mockInterview.setWhatsappReminderSent(false);
 
         mockInterviewRepository.save(mockInterview);
+
+        whatsAppService.sendInterviewRequestToMentor(
+                mentor,
+                student,
+                mockInterview
+        );
     }
 
     public void acceptMentorInterview(Integer mentorId, Integer mockInterviewId) {
@@ -188,6 +196,7 @@ public class MockInterviewService {
         mockInterview.setUrl(null);
         mockInterview.setMeetingProvider(null);
         mockInterview.setExternalMeetingId(null);
+        mockInterview.setWhatsappReminderSent(false);
 
         mockInterviewRepository.save(mockInterview);
 

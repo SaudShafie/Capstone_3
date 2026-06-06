@@ -2,6 +2,7 @@ package org.example.capstone_3.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.AI.AiException;
+import org.example.capstone_3.AI.AiJsonParser;
 import org.example.capstone_3.AI.AiService;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.AiInterviewAnswerDTOIN;
@@ -24,33 +25,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class MockInterviewService {
-
-    private static final Pattern QUESTIONS_PATTERN =
-            Pattern.compile("\"questions\"\\s*:\\s*\"(.*?)\"", Pattern.DOTALL);
-
-    private static final Pattern FEEDBACK_PATTERN =
-            Pattern.compile("\"feedback\"\\s*:\\s*\"(.*?)\"", Pattern.DOTALL);
-
-    private static final Pattern SCORE_PATTERN =
-            Pattern.compile("\"score\"\\s*:\\s*(\\d+)");
-
-    private static final Pattern SUMMARY_PATTERN =
-            Pattern.compile("\"summary\"\\s*:\\s*\"(.*?)\"", Pattern.DOTALL);
-
-    private static final Pattern STRENGTHS_PATTERN =
-            Pattern.compile("\"strengths\"\\s*:\\s*\"(.*?)\"", Pattern.DOTALL);
-
-    private static final Pattern WEAKNESSES_PATTERN =
-            Pattern.compile("\"weaknesses\"\\s*:\\s*\"(.*?)\"", Pattern.DOTALL);
-
-    private static final Pattern RECOMMENDATIONS_PATTERN =
-            Pattern.compile("\"recommendations\"\\s*:\\s*\"(.*?)\"", Pattern.DOTALL);
 
     private final MockInterviewRepository mockInterviewRepository;
     private final MockInterviewReportRepository mockInterviewReportRepository;
@@ -242,7 +220,7 @@ public class MockInterviewService {
 
         String json = evaluateAiInterviewAnswers(student, mockInterview, dto.getStudentAnswers());
 
-        mockInterview.setFeedback(parseTextField(json, FEEDBACK_PATTERN, "feedback"));
+        mockInterview.setFeedback(parseTextField(json, "feedback"));
         mockInterview.setScore(parseScore(json));
         mockInterview.setStatus("COMPLETE");
 
@@ -250,10 +228,10 @@ public class MockInterviewService {
 
         MockInterviewReport report = new MockInterviewReport();
 
-        report.setSummary(parseTextField(json, SUMMARY_PATTERN, "summary"));
-        report.setStrengths(parseTextField(json, STRENGTHS_PATTERN, "strengths"));
-        report.setWeaknesses(parseTextField(json, WEAKNESSES_PATTERN, "weaknesses"));
-        report.setRecommendations(parseTextField(json, RECOMMENDATIONS_PATTERN, "recommendations"));
+        report.setSummary(parseTextField(json, "summary"));
+        report.setStrengths(parseTextField(json, "strengths"));
+        report.setWeaknesses(parseTextField(json, "weaknesses"));
+        report.setRecommendations(parseTextField(json, "recommendations"));
         report.setGeneratedAt(LocalDateTime.now());
         report.setStudent(student);
         report.setMockInterview(mockInterview);
@@ -449,6 +427,9 @@ public class MockInterviewService {
                 - relevance to the interview questions
                 - readiness for the target role
 
+                If core concepts are correct but brief, score 70-85 rather than below 60.
+                Do not penalize concise answers when the main idea is right.
+
                 Student name: %s
                 Student major: %s
                 Student target role: %s
@@ -491,58 +472,15 @@ public class MockInterviewService {
     }
 
     private String parseQuestions(String json) {
-
-        Matcher matcher = QUESTIONS_PATTERN.matcher(json);
-
-        if (!matcher.find()) {
-            throw new AiException("AI response did not contain questions.");
-        }
-
-        String questions = matcher.group(1)
-                .replace("\\n", "\n")
-                .replace("\\\"", "\"");
-
-        if (questions.isBlank()) {
-            throw new AiException("AI returned empty questions.");
-        }
-
-        return questions;
+        return AiJsonParser.requireText(AiJsonParser.parseObject(json), "questions");
     }
 
-    private String parseTextField(String json, Pattern pattern, String fieldName) {
-
-        Matcher matcher = pattern.matcher(json);
-
-        if (!matcher.find()) {
-            throw new AiException("AI response did not contain " + fieldName + ".");
-        }
-
-        String value = matcher.group(1)
-                .replace("\\n", "\n")
-                .replace("\\\"", "\"");
-
-        if (value.isBlank()) {
-            throw new AiException("AI returned empty " + fieldName + ".");
-        }
-
-        return value;
+    private String parseTextField(String json, String fieldName) {
+        return AiJsonParser.requireText(AiJsonParser.parseObject(json), fieldName);
     }
 
     private Integer parseScore(String json) {
-
-        Matcher matcher = SCORE_PATTERN.matcher(json);
-
-        if (!matcher.find()) {
-            throw new AiException("AI response did not contain score.");
-        }
-
-        int score = Integer.parseInt(matcher.group(1));
-
-        if (score < 0 || score > 100) {
-            throw new AiException("AI score must be between 0 and 100.");
-        }
-
-        return score;
+        return AiJsonParser.requireInt(AiJsonParser.parseObject(json), "score", 0, 100);
     }
 
     private Student findStudent(Integer studentId) {

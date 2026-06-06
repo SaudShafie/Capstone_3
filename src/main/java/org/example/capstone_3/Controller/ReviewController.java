@@ -25,11 +25,6 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getById(id));
     }
 
-    @GetMapping("/mentor/{mentorId}")
-    public ResponseEntity<?> getReviewsByMentorId(@PathVariable Integer mentorId) {
-        return ResponseEntity.ok(reviewService.getReviewsByMentorId(mentorId));
-    }
-
     @GetMapping("/student/{studentId}")
     public ResponseEntity<?> getReviewsByStudentId(@PathVariable Integer studentId) {
         return ResponseEntity.ok(reviewService.getReviewsByStudentId(studentId));

@@ -42,7 +42,7 @@ public class ZoomMeetingService implements MeetingService {
 
         Map<String, Object> body = new HashMap<>();
 
-        body.put("topic", "CareerFit Mock Interview - " + student.getFullName());
+        body.put("topic", "Khutaa Mock Interview - " + student.getFullName());
         body.put("type", 2);
         body.put("start_time", mockInterview.getScheduledAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         body.put("duration", mockInterview.getDurationMinutes());

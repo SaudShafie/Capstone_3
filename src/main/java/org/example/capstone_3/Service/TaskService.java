@@ -228,12 +228,14 @@ public class TaskService {
     - Similar meaning counts as duplication even if wording is different
     - Prefer unexplored aspects of the focus area
 
-    SUBMISSION RULES:
-    - The task deliverable must be text-based ONLY
-    - Do NOT ask students to submit files, links, GitHub repos, or any external resources
-    - The student must write their answer directly as text
-    - Example of GOOD deliverable: "Write the SQL query", "Explain the steps", "Write the code snippet"
-    - Example of BAD deliverable: "Submit a GitHub link", "Upload a file", "Share your repo"
+    SUBMISSION RULES (MANDATORY):
+    - The task deliverable must be a plain TEXT answer only — written explanation in the submission text box
+    - Students type their answer directly; there is no file upload, link, repo, screenshot, or image submission
+    - Do NOT ask students to: implement, build, deploy, code, paste code snippets, share GitHub, upload files, or attach screenshots
+    - Do NOT generate tasks whose title starts with or implies "Implement", "Build", "Code", or "Create a project"
+    - GOOD task types: explain a concept, compare two approaches, outline steps in prose, describe how something works, analyze a scenario, list pros/cons, summarize best practices
+    - GOOD deliverable examples: "Explain how JWT authentication works in a REST API", "Describe the steps to secure an endpoint using Spring Security", "Compare session-based vs token-based auth"
+    - BAD deliverable examples: "Implement JWT authentication", "Write the code for...", "Submit your GitHub repo", "Paste your code snippet", "Upload a screenshot", "Build a REST API"
 
     Today's date is: %s
     Deadline: %d days from today
@@ -250,16 +252,17 @@ public class TaskService {
     - title:
       * max 10 words
       * must reflect the focus area "%s"
-      * must give a clear idea of what will be done
+      * must describe a concept to explain — NOT an implementation project (avoid "Implement", "Build", "Code")
+      * must give a clear idea of what the student will write about in text
 
     - description:
       * max 80 words
-      * must be a concrete, actionable assignment
-      * must clearly state what the student needs to WRITE or TYPE as their answer
+      * must be a concrete, actionable assignment answerable entirely in plain text
+      * must ask the student to EXPLAIN, DESCRIBE, OUTLINE, COMPARE, or ANALYZE — never to implement or code
+      * must clearly state what the student needs to write in their text submission (no code, files, links, or screenshots)
       * must reflect the difficulty level and time available
-      * avoid vague instructions like "research and discuss" — be specific about the deliverable
-      * do NOT mention file uploads, links, or external submissions
-      * if the answer involves code, ask the student to type the code ONLY — do NOT ask for explanations or descriptions
+      * avoid vague instructions like "research and discuss" — be specific about what concepts to cover
+      * do NOT mention code snippets, syntax, file uploads, links, repos, screenshots, or external submissions
       * may explore a deeper or related aspect of previous tasks without repeating them
 
     - difficulty: must be exactly: %s

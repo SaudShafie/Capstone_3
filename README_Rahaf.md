@@ -218,11 +218,11 @@ docs/images/         # Architecture & sequence diagram assets
 | `PUT` | `/api/v1/mock-interview/mentor/no-show/{mentorId}/{mockInterviewId}` | Allows a mentor to mark the student as no-show for a scheduled mock interview |
 | `GET` | `/api/v1/mock-interview/mentor/{mentorId}/schedule` | Returns the mentor's scheduled mock interviews |
 | `POST` | `/api/v1/mock-interview/ai/add/{studentId}` | Creates a new AI mock interview for a student and generates interview questions |
-| `GET` | `/api/v1/mock-interview/student/{studentId}/stats` | Returns the student's interview statistics, including total interviews, mentor interviews, AI interviews, completed interviews, and average score |
 | `PUT` | `/api/v1/mock-interview/ai/submit/{studentId}/{mockInterviewId}` | Submits the student's AI interview answers, evaluates them, and generates a report |
 | `GET` | `/api/v1/mock-interview-report/ai/{studentId}/{mockInterviewId}` | Returns the generated AI mock interview report for a student |
 | `GET` | `/api/v1/mock-interview/ai/student/{studentId}` | Returns all AI mock interviews created by a student |
 | `GET` | `/api/v1/mock-interview/student/{studentId}/history` | Returns the student's full mock interview history |
+| `GET` | `/api/v1/mock-interview/student/{studentId}/stats` | Returns the student's interview statistics, including total interviews, mentor interviews, AI interviews, completed interviews, and average score |
 
 #### Example requests (Rahaf Alamri endpoints)
 
@@ -286,12 +286,6 @@ Content-Type: application/json
 }
 ```
 
-**Get student interview stats**
-
-```http
-GET /api/v1/mock-interview/student/1/stats
-```
-
 **Submit AI interview answers**
 
 ```http
@@ -319,6 +313,12 @@ GET /api/v1/mock-interview/ai/student/1
 
 ```http
 GET /api/v1/mock-interview/student/1/history
+```
+
+**Get student interview stats**
+
+```http
+GET /api/v1/mock-interview/student/1/stats
 ```
 
 ---

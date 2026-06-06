@@ -177,16 +177,15 @@ public class TaskSubmissionService {
         - Difficulty: "%s"
 
         EVALUATION RULES:
-        - Evaluate how well the student's answer addresses the task description
-        - Score must reflect the quality, completeness, and relevance of the answer
-        - Do NOT give full marks for incomplete answers
+        - This platform accepts plain-text answers only — do NOT expect code, syntax, file uploads, links, repos, or screenshots
+        - Evaluate how well the student's written explanation addresses the task description
+        - Score based on conceptual understanding, clarity, completeness, and relevance — not working code or implementation
+        - Do NOT deduct points for missing code, missing syntax, or lack of executable examples
+        - Do NOT ask the student to provide code in feedback — they can only submit text explanations
         - Provide constructive, specific feedback explaining the score
-        - Feedback must mention what was done well and what was missing
-        - Do NOT deduct points for missing comments, code style, or documentation
-        - Only deduct for missing functionality, wrong logic, or incomplete implementation
-        - Suggestions about comments or style should appear in feedback only, not affect the score
-        - Do not penalize brevity when all required points are covered
-        - For EASY tasks, a concise correct answer should score at least 75
+        - Feedback must mention what was done well and what was missing conceptually
+        - Do not penalize brevity when all required points are covered in prose
+        - For EASY tasks, a concise correct explanation should score at least 75
 
         STUDENT ANSWER:
         %s
@@ -200,14 +199,13 @@ public class TaskSubmissionService {
         FIELD RULES:
         - score:
           * integer between 0 and 100
-          * EASY task: full marks for correct basic answer, deduct for missing key points;
-            concise correct answers should score at least 75
-          * MEDIUM task: full marks only for complete and well-reasoned answer
-          * HARD task: full marks for a solid, well-explained answer — do NOT require perfection,
+          * EASY task: full marks for a correct basic explanation; concise prose covering key points should score at least 75
+          * MEDIUM task: full marks for a complete, well-reasoned text explanation
+          * HARD task: full marks for solid conceptual coverage — do NOT require code or perfection;
             reward good understanding and effort even if not expert-level
-          * For HARD tasks, a good-faith attempt with correct core concepts should score at least 60
+          * For HARD tasks, a good-faith explanation with correct core concepts should score at least 60
           * 0 = completely wrong or irrelevant
-          * 100 = perfect, complete, professional answer
+          * 100 = perfect, complete, professional text explanation
 
         - feedback:
           * max 80 words

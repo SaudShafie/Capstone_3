@@ -1,8 +1,9 @@
 package org.example.capstone_3.Service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.capstone_3.AI.AiException;
+import org.example.capstone_3.AI.AiJsonParser;
 import org.example.capstone_3.AI.AiService;
+import tools.jackson.databind.JsonNode;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.JobAnalysisDTOIn;
 import org.example.capstone_3.DTO.OUT.JobAnalysisDTOOut;
@@ -22,18 +23,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class JobAnalysisService {
-
-    private static final Pattern MATCH_SCORE_PATTERN =
-            Pattern.compile("\"matchScore\"\\s*:\\s*(\\d+)");
-    private static final Pattern QUOTED_STRING_PATTERN =
-            Pattern.compile("\"((?:\\\\.|[^\"\\\\])*)\"");
 
     private final JobAnalysisRepository jobAnalysisRepository;
     private final StudentRepository studentRepository;
@@ -163,6 +157,7 @@ public class JobAnalysisService {
                   "skills": ["SkillName1", "SkillName2"]
                 }
                 matchScore must be an integer from 0 to 100.
+                missingSkills, summary, strengths, weaknesses, and recommendations must each be a single JSON string value (not an array).
                 The student's readinessScore (below) was already calculated for their target role using CV and profile data.
                 Use it as a baseline for overall preparedness, but matchScore must reflect fit for THIS job posting specifically.
                 skills must be a JSON array of skill names picked ONLY from the available skills list below.
@@ -277,22 +272,18 @@ public class JobAnalysisService {
     }
 
     private AiJobAnalysisResult parseJobAnalysisResult(String json) {
-        int matchScore = parseMatchScore(json);
-        String missingSkills = extractJsonString(json, "missingSkills");
-        String summary = extractJsonString(json, "summary");
-        String strengths = extractJsonString(json, "strengths");
-        String weaknesses = extractJsonString(json, "weaknesses");
-        String recommendations = extractJsonString(json, "recommendations");
-        String jobTitle = extractJsonString(json, "jobTitle");
-        List<String> skillNames = extractJsonStringArray(json, "skills");
-
-        if (missingSkills == null || summary == null || strengths == null || weaknesses == null
-                || recommendations == null) {
-            throw new AiException("AI response is missing required job analysis fields.");
-        }
+        JsonNode node = AiJsonParser.parseObject(json);
+        int matchScore = AiJsonParser.requireInt(node, "matchScore", 0, 100);
+        String missingSkills = AiJsonParser.requireText(node, "missingSkills");
+        String summary = AiJsonParser.requireText(node, "summary");
+        String strengths = AiJsonParser.requireText(node, "strengths");
+        String weaknesses = AiJsonParser.requireText(node, "weaknesses");
+        String recommendations = AiJsonParser.requireText(node, "recommendations");
+        String jobTitle = AiJsonParser.optionalText(node, "jobTitle");
+        List<String> skillNames = AiJsonParser.optionalStringList(node, "skills");
 
         return new AiJobAnalysisResult(
-                jobTitle == null || jobTitle.isBlank() ? "Job analysis" : jobTitle,
+                jobTitle == null ? "Job analysis" : jobTitle,
                 matchScore,
                 missingSkills,
                 summary,
@@ -301,26 +292,6 @@ public class JobAnalysisService {
                 recommendations,
                 skillNames
         );
-    }
-
-    private List<String> extractJsonStringArray(String json, String fieldName) {
-        Pattern fieldPattern = Pattern.compile(
-                "\"" + Pattern.quote(fieldName) + "\"\\s*:\\s*\\[(.*?)\\]",
-                Pattern.DOTALL);
-        Matcher arrayMatcher = fieldPattern.matcher(json);
-        if (!arrayMatcher.find()) {
-            return List.of();
-        }
-
-        List<String> values = new ArrayList<>();
-        Matcher stringMatcher = QUOTED_STRING_PATTERN.matcher(arrayMatcher.group(1));
-        while (stringMatcher.find()) {
-            String value = unescapeJsonString(stringMatcher.group(1));
-            if (!value.isBlank()) {
-                values.add(value);
-            }
-        }
-        return values;
     }
 
     private Set<Skill> resolveSkillsFromNames(List<String> skillNames) {
@@ -355,49 +326,6 @@ public class JobAnalysisService {
             skills.add(skill);
         }
         return skills;
-    }
-
-    private int parseMatchScore(String json) {
-        Matcher matcher = MATCH_SCORE_PATTERN.matcher(json);
-        if (!matcher.find()) {
-            throw new AiException("AI response did not contain matchScore.");
-        }
-        int score = Integer.parseInt(matcher.group(1));
-        if (score < 0 || score > 100) {
-            throw new AiException("AI matchScore must be between 0 and 100.");
-        }
-        return score;
-    }
-
-    private String extractJsonString(String json, String fieldName) {
-        Pattern pattern = Pattern.compile(
-                "\"" + Pattern.quote(fieldName) + "\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"");
-        Matcher matcher = pattern.matcher(json);
-        if (!matcher.find()) {
-            return null;
-        }
-        return unescapeJsonString(matcher.group(1));
-    }
-
-    private String unescapeJsonString(String value) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (c == '\\' && i + 1 < value.length()) {
-                char next = value.charAt(++i);
-                switch (next) {
-                    case 'n' -> result.append('\n');
-                    case 'r' -> result.append('\r');
-                    case 't' -> result.append('\t');
-                    case '"' -> result.append('"');
-                    case '\\' -> result.append('\\');
-                    default -> result.append(next);
-                }
-            } else {
-                result.append(c);
-            }
-        }
-        return result.toString().trim();
     }
 
     private void applyAiResult(JobAnalysis jobAnalysis, AiJobAnalysisResult result) {

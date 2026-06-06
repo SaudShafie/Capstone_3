@@ -13,7 +13,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SchedulerService {
+public class MockInterviewReminderScheduler {
 
     private final TaskRepository taskRepository;
     private final StudentRepository studentRepository;

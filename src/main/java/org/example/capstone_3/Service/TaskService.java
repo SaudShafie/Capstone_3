@@ -82,8 +82,7 @@ public class TaskService {
         }
     }
 
-    //@Scheduled(cron = "0 0 10 * * SUN")
-    @Scheduled(cron = "0 45 21 * * FRI")
+    @Scheduled(cron = "0 0 10 * * SUN")
     public void aiPublish(){
         List<LearningGroup> learningGroups = learningGroupRepository.findAll();
         for(LearningGroup group: learningGroups){

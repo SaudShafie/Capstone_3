@@ -124,7 +124,7 @@ public class EmailService {
 
             Make sure to submit before the deadline.
 
-            CareerFit Community
+            Kutaa team
             """.formatted(
                 student.getFullName(),
                 task.getLearningGroup().getName(),

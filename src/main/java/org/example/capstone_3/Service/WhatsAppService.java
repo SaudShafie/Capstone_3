@@ -105,7 +105,7 @@ public class WhatsAppService {
                 + "Title: " + task.getTitle() + "\n"
                 + "Difficulty: " + task.getDifficulty() + "\n"
                 + "Please make sure to submit on time.\n\n"
-                + "CareerFit Community";
+                + "Kutaa team";
 
         sendWhatsApp(student.getPhoneNumber(), message);
     }

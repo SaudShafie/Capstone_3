@@ -133,7 +133,7 @@ public class TaskService {
     }
 
     public List<TaskDTOOUT> groupOldTasks(Integer learningGroupId){
-        LearningGroup learningGroup = findLearningGroup(learningGroupId);
+        findLearningGroup(learningGroupId);
 
         List<TaskDTOOUT> oldTasks = new ArrayList<>();
         for(Task task: taskRepository.groupOldTasks(learningGroupId)){
@@ -142,17 +142,14 @@ public class TaskService {
         return oldTasks;
     }
 
-    public TaskDTOOUT groupAvailableTasks(Integer learningGroupId){
-        LearningGroup learningGroup = findLearningGroup(learningGroupId);
+    public List<TaskDTOOUT> groupAvailableTasks(Integer learningGroupId) {
+        findLearningGroup(learningGroupId);
 
-        Task available = taskRepository.groupAvailableTasks(learningGroup.getId());
-        return new TaskDTOOUT(
-                available.getId(),
-                available.getTitle(),
-                available.getDescription(),
-                available.getDifficulty(),
-                available.getDeadline()
-        );
+        List<TaskDTOOUT> availableTasks = new ArrayList<>();
+        for (Task task : taskRepository.groupAvailableTasks(learningGroupId)) {
+            availableTasks.add(convertToDTO(task));
+        }
+        return availableTasks;
     }
 
     private Student findStudent(Integer student_id) {

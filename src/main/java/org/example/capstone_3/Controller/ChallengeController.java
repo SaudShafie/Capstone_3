@@ -43,12 +43,12 @@ public class ChallengeController {
         return ResponseEntity.ok().body(new ApiResponse("Challenge has been deleted successfully"));
     }
 
-    @GetMapping("/open-by-skill/{skillId}")
+    @GetMapping("/by-skill/{skillId}")
     public ResponseEntity<?> challengesBySkill(@PathVariable Integer skillId) {
         return ResponseEntity.ok(challengeService.challengesBySkill(skillId));
     }
 
-    @GetMapping("/open-by-skill-and-difficulty/{skillId}/{difficulty}")
+    @GetMapping("/by-skill-and-difficulty/{skillId}/{difficulty}")
     public ResponseEntity<?> challengesBySkillAndDifficulty(@PathVariable Integer skillId, @PathVariable String difficulty) {
         return ResponseEntity.ok(challengeService.challengesBySkillAndDifficulty(skillId, difficulty));
     }

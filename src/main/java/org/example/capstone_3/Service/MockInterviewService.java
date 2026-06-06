@@ -72,6 +72,37 @@ public class MockInterviewService {
         return result;
     }
 
+    public StudentInterviewStatsDTOOUT getStudentInterviewStats(Integer studentId) {
+
+        Student student = studentRepository.findStudentById(studentId);
+        if (student == null) {
+            throw new ApiException("Student with id " + studentId + " not found");
+        }
+
+        List<MockInterview> all =
+                mockInterviewRepository.findMockInterviewsByStudentId(studentId);
+
+        int total = all.size();
+        int mentorCount = 0;
+        int aiCount = 0;
+        int completedCount = 0;
+
+        for (MockInterview m : all) {
+            if ("MENTOR".equals(m.getInterviewMode())) mentorCount++;
+            if ("AI".equals(m.getInterviewMode()))     aiCount++;
+            if ("COMPLETE".equals(m.getStatus()))      completedCount++;
+        }
+
+        Double avgScore = mockInterviewRepository.avgScoreForStudent(studentId);
+
+        return new StudentInterviewStatsDTOOUT(
+                total,
+                mentorCount,
+                aiCount,
+                completedCount,
+                avgScore
+        );
+    }
 
     public List<MentorScheduleDTOOUT> getMentorSchedule(Integer mentorId) {
 

@@ -33,6 +33,11 @@ public class MockInterviewController {
         return ResponseEntity.ok(mockInterviewService.getById(id));
     }
 
+    @GetMapping("/student/{studentId}/stats")
+    public ResponseEntity<?> getStudentInterviewStats(@PathVariable Integer studentId) {
+        return ResponseEntity.ok(mockInterviewService.getStudentInterviewStats(studentId));
+    }
+
     @GetMapping("/mentor/pending/{mentorId}")
     public ResponseEntity<?> getPendingMentorInterviews(@PathVariable Integer mentorId) {
         return ResponseEntity.ok(mockInterviewService.getPendingMentorInterviews(mentorId));

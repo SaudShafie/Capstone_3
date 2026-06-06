@@ -1,7 +1,7 @@
 package org.example.capstone_3.Service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.capstone_3.AI.AiException;
+import org.example.capstone_3.AI.AiJsonParser;
 import org.example.capstone_3.AI.AiService;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.ChallengeAttemptDTOIN;
@@ -17,15 +17,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class ChallengeAttemptService {
-
-    private static final Pattern IS_CORRECT_PATTERN =
-            Pattern.compile("\"isCorrect\"\\s*:\\s*(true|false)");
 
     private final ChallengeAttemptRepository challengeAttemptRepository;
     private final ChallengeRepository challengeRepository;
@@ -50,7 +45,7 @@ public class ChallengeAttemptService {
         challengeAttempt.setCorrect(isCorrect);
         challengeAttempt.setSubmittedAt(LocalDateTime.now());
 
-        if (isCorrect && challenge.getDeadline().isBefore(LocalDateTime.now())) {
+        if (isCorrect) {
             student.setXp(student.getXp() + challenge.getPoints());
             studentRepository.save(student);
         }
@@ -70,7 +65,6 @@ public class ChallengeAttemptService {
         return challengeAttemptRepository.findAll().stream().map(this::toDtoOut).toList();
     }
 
-    //Useless
     public void update(Integer id, ChallengeAttemptDTOIN dto) {
         ChallengeAttempt challengeAttempt = challengeAttemptRepository.findChallengeAttemptById(id);
         if (challengeAttempt == null) {
@@ -122,7 +116,6 @@ public class ChallengeAttemptService {
         challengeAttempt.setSubmittedAnswer(dto.getSubmittedAnswer());
     }
 
-
     private Student findStudent(Integer studentId) {
         if (studentId == null) {
             return null;
@@ -161,6 +154,7 @@ public class ChallengeAttemptService {
         String json = aiService.ask(prompt);
         return parseIsCorrect(json);
     }
+
     private String buildIsCorrectPrompt(String submittedAnswer, String correctAnswer) {
         return """
         You are a strict but fair answer evaluator for a career development platform
@@ -169,6 +163,8 @@ public class ChallengeAttemptService {
         Compare the student's answer to the correct answer based on CONCEPTS, not exact wording.
         Consider the answer CORRECT if the student demonstrates understanding of the core idea,
         even if they use different phrasing, additional detail, or a different order.
+        If the student gives a valid example of the concept (e.g. O(n) for Big-O), mark correct
+        even when the full formal definition is not stated.
 
         Consider the answer INCORRECT only if:
         - A key concept is missing
@@ -186,10 +182,6 @@ public class ChallengeAttemptService {
     }
 
     private boolean parseIsCorrect(String json) {
-        Matcher matcher = IS_CORRECT_PATTERN.matcher(json);
-        if (!matcher.find()) {
-            throw new AiException("AI response did not contain isCorrect.");
-        }
-        return Boolean.parseBoolean(matcher.group(1));
+        return AiJsonParser.requireBoolean(AiJsonParser.parseObject(json), "isCorrect");
     }
 }

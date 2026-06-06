@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.LearningGroupDTOIN;
 import org.example.capstone_3.DTO.OUT.LearningGroupDTOOUT;
+import org.example.capstone_3.DTO.OUT.StudentSummaryDTOOut;
 import org.example.capstone_3.DTO.OUT.TaskDTOOUT;
 import org.example.capstone_3.Model.LearningGroup;
 import org.example.capstone_3.Model.Student;
@@ -63,7 +64,6 @@ public class LearningGroupService {
 
         if (dto.getGroupType().equalsIgnoreCase("Private")) {
             learningGroup.setCode(generateUniqueCode());
-            // most send the code to student by email
         }
 
         learningGroupRepository.save(learningGroup);
@@ -172,6 +172,28 @@ public class LearningGroupService {
         whatsAppService.sendInviteMessage(invitedStudent, learningGroup, inviter);
     }
 
+    public List<StudentSummaryDTOOut> groupMembers(Integer learningGroupId){
+        List<StudentSummaryDTOOut> members = new ArrayList<>();
+        for(Student student: studentRepository.findStudentsByGroupId(learningGroupId)){
+            members.add(convertToStudentSummaryDTOOut(student));
+        }
+        return members;
+    }
+
+    public List<LearningGroupDTOOUT> studentGroups(Integer studentId) {
+        findStudent(studentId);
+
+        List<LearningGroupDTOOUT> groups = new ArrayList<>();
+        for (LearningGroup group : learningGroupRepository.studentGroups(studentId)) {
+            groups.add(convertToDTO(group));
+        }
+        return groups;
+    }
+
+    public StudentSummaryDTOOut convertToStudentSummaryDTOOut(Student student){
+        return new StudentSummaryDTOOut(student.getId(),student.getFullName());
+    }
+
     private Student findStudent(Integer student_id) {
         Student student = studentRepository.findStudentById(student_id);
         if (student == null) {
@@ -187,7 +209,6 @@ public class LearningGroupService {
         }
         return learningGroup;
     }
-
 
     private void applyDto(LearningGroup learningGroup, LearningGroupDTOIN dto) {
         learningGroup.setName(dto.getName());
@@ -211,7 +232,6 @@ public class LearningGroupService {
                 learningGroup.getName(),
                 learningGroup.getFocusArea(),
                 learningGroup.getDescription(),
-                tasks,
                 learningGroup.getCreatedAt()
         );
     }

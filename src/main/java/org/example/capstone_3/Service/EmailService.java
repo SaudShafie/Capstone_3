@@ -3,10 +3,7 @@ package org.example.capstone_3.Service;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiException;
-import org.example.capstone_3.Model.Mentor;
-import org.example.capstone_3.Model.MockInterview;
-import org.example.capstone_3.Model.MockInterviewReport;
-import org.example.capstone_3.Model.Student;
+import org.example.capstone_3.Model.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -126,5 +123,16 @@ public class EmailService {
         } catch (Exception e) {
             throw new ApiException("Failed to send interview report email: " + e.getMessage());
         }
+    }
+
+    public void sendTaskPublishedToStudent(Student student, Task task) {
+        String subject = SYSTEM_NAME + " — New Task Published";
+
+        sendHtmlEmail(
+                student.getEmail(),
+                subject,
+                EmailHtmlTemplates.buildTaskPublishedHtml(student, task),
+                EmailHtmlTemplates.buildTaskPublishedPlainText(student, task)
+        );
     }
 }

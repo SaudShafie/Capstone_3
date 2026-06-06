@@ -58,6 +58,7 @@ public class AiService {
                 Map.of("role", "user", "content", prompt)
         ));
         body.put("response_format", Map.of("type", "json_object"));
+        body.put("temperature", 0);
 
         try {
             RestClient client = RestClient.builder()

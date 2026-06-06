@@ -8,10 +8,8 @@ import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.AiInterviewAnswerDTOIN;
 import org.example.capstone_3.DTO.IN.AiMockInterviewDTOIN;
 import org.example.capstone_3.DTO.IN.MockInterviewDTOIN;
-import org.example.capstone_3.DTO.OUT.AiInterviewQuestionsDTOOUT;
-import org.example.capstone_3.DTO.OUT.AiMockInterviewReportDTOOUT;
-import org.example.capstone_3.DTO.OUT.MentorMockInterviewDTOOUT;
-import org.example.capstone_3.DTO.OUT.MockInterviewDTOOUT;
+import org.example.capstone_3.DTO.IN.MockInterviewRescheduleDTOIn;
+import org.example.capstone_3.DTO.OUT.*;
 import org.example.capstone_3.Model.Mentor;
 import org.example.capstone_3.Model.MockInterview;
 import org.example.capstone_3.Model.MockInterviewReport;
@@ -39,6 +37,78 @@ public class MockInterviewService {
     private final MeetingService meetingService;
     private final EmailService emailService;
     private final WhatsAppService whatsAppService;
+
+
+    public List<StudentInterviewHistoryDTOOUT> getStudentHistory(Integer studentId) {
+
+        Student student = studentRepository.findStudentById(studentId);
+        if (student == null) {
+            throw new ApiException("Student with id " + studentId + " not found");
+        }
+
+        List<MockInterview> interviews =
+                mockInterviewRepository.findMockInterviewsByStudentIdOrderByCreatedAtDesc(studentId);
+
+        List<StudentInterviewHistoryDTOOUT> result = new ArrayList<>();
+
+        for (MockInterview interview : interviews) {
+            String mentorName = (interview.getMentor() != null)
+                    ? interview.getMentor().getFullName()
+                    : null;
+
+            result.add(new StudentInterviewHistoryDTOOUT(
+                    interview.getId(),
+                    interview.getInterviewMode(),
+                    interview.getInterviewType(),
+                    interview.getStatus(),
+                    interview.getScheduledAt(),
+                    interview.getDurationMinutes(),
+                    interview.getScore(),
+                    mentorName,
+                    interview.getCreatedAt()
+            ));
+        }
+
+        return result;
+    }
+
+
+    public List<MentorScheduleDTOOUT> getMentorSchedule(Integer mentorId) {
+
+        Mentor mentor = mentorRepository.findMentorById(mentorId);
+        if (mentor == null) {
+            throw new ApiException("Mentor with id " + mentorId + " not found");
+        }
+
+        List<MockInterview> scheduled =
+                mockInterviewRepository
+                        .findMockInterviewsByMentorIdAndStatusOrderByScheduledAtAsc(mentorId, "SCHEDULE");
+
+        List<MentorScheduleDTOOUT> result = new ArrayList<>();
+
+        for (MockInterview interview : scheduled) {
+            String studentName = (interview.getStudent() != null)
+                    ? interview.getStudent().getFullName()
+                    : null;
+            String studentTargetRole = (interview.getStudent() != null)
+                    ? interview.getStudent().getTargetRole()
+                    : null;
+
+            result.add(new MentorScheduleDTOOUT(
+                    interview.getId(),
+                    interview.getInterviewType(),
+                    interview.getScheduledAt(),
+                    interview.getDurationMinutes(),
+                    studentName,
+                    studentTargetRole,
+                    interview.getUrl(),
+                    interview.getMeetingProvider()
+            ));
+        }
+
+        return result;
+    }
+
 
     public void createMentorInterview(Integer studentId, Integer mentorId, MockInterviewDTOIN dto) {
 
@@ -122,6 +192,43 @@ public class MockInterviewService {
         );
     }
 
+    public void rejectMentorInterview(Integer mentorId, Integer mockInterviewId) {
+
+        Mentor mentor = mentorRepository.findMentorById(mentorId);
+        if (mentor == null) {
+            throw new ApiException("Mentor with id " + mentorId + " not found");
+        }
+
+        MockInterview mockInterview =
+                mockInterviewRepository.findMockInterviewById(mockInterviewId);
+        if (mockInterview == null) {
+            throw new ApiException("Mock interview with id " + mockInterviewId + " not found");
+        }
+
+        if (mockInterview.getMentor() == null ||
+                !mockInterview.getMentor().getId().equals(mentorId)) {
+            throw new ApiException("This mock interview does not belong to this mentor");
+        }
+
+        if (!mockInterview.getStatus().equals("PENDING")) {
+            throw new ApiException("Only PENDING interviews can be rejected");
+        }
+
+        mockInterview.setStatus("REJECT");
+        mockInterviewRepository.save(mockInterview);
+
+        if (mockInterview.getStudent() != null) {
+            Student student = mockInterview.getStudent();
+            String message = "Hello " + student.getFullName() + ",\n\n"
+                    + "Unfortunately, your mock interview request has been declined by "
+                    + mentor.getFullName() + ".\n\n"
+                    + "Please browse other available mentors and request a new session.\n\n"
+                    + "Khutaa Team";
+            whatsAppService.sendWhatsApp(student.getPhoneNumber(), message);
+        }
+    }
+
+
     public List<MentorMockInterviewDTOOUT> getPendingMentorInterviews(Integer mentorId) {
 
         findMentor(mentorId);
@@ -155,6 +262,84 @@ public class MockInterviewService {
         }
 
         return toMentorDtoOut(mockInterview);
+    }
+
+    public void rescheduleMentorInterview(Integer mentorId, Integer mockInterviewId, MockInterviewRescheduleDTOIn dto) {
+
+        Mentor mentor = mentorRepository.findMentorById(mentorId);
+        if (mentor == null) {
+            throw new ApiException("Mentor with id " + mentorId + " not found");
+        }
+
+        MockInterview mockInterview =
+                mockInterviewRepository.findMockInterviewById(mockInterviewId);
+        if (mockInterview == null) {
+            throw new ApiException("Mock interview with id " + mockInterviewId + " not found");
+        }
+
+        if (mockInterview.getMentor() == null ||
+                !mockInterview.getMentor().getId().equals(mentorId)) {
+            throw new ApiException("This mock interview does not belong to this mentor");
+        }
+
+        if (!mockInterview.getStatus().equals("PENDING") &&
+                !mockInterview.getStatus().equals("SCHEDULE")) {
+            throw new ApiException("Only PENDING or SCHEDULE interviews can be rescheduled");
+        }
+
+        mockInterview.setScheduledAt(dto.getScheduledAt());
+        mockInterview.setDurationMinutes(dto.getDurationMinutes());
+        mockInterviewRepository.save(mockInterview);
+
+        if (mockInterview.getStudent() != null) {
+            Student student = mockInterview.getStudent();
+            String message = "Hello " + student.getFullName() + ",\n\n"
+                    + "Your mentor " + mentor.getFullName()
+                    + " has proposed a new time for your mock interview.\n\n"
+                    + "New Date & Time: " + dto.getScheduledAt() + "\n"
+                    + "Duration: " + dto.getDurationMinutes() + " minutes\n\n"
+                    + "Please review the new time on Khutaa.\n\n"
+                    + "Khutaa Team";
+            whatsAppService.sendWhatsApp(student.getPhoneNumber(), message);
+        }
+    }
+
+
+    public void markStudentNoShow(Integer mentorId, Integer mockInterviewId) {
+
+        Mentor mentor = mentorRepository.findMentorById(mentorId);
+        if (mentor == null) {
+            throw new ApiException("Mentor with id " + mentorId + " not found");
+        }
+
+        MockInterview mockInterview =
+                mockInterviewRepository.findMockInterviewById(mockInterviewId);
+        if (mockInterview == null) {
+            throw new ApiException("Mock interview with id " + mockInterviewId + " not found");
+        }
+
+        if (mockInterview.getMentor() == null ||
+                !mockInterview.getMentor().getId().equals(mentorId)) {
+            throw new ApiException("This mock interview does not belong to this mentor");
+        }
+
+        if (!mockInterview.getStatus().equals("SCHEDULE")) {
+            throw new ApiException("No-show can only be recorded for SCHEDULE interviews");
+        }
+
+        mockInterview.setStatus("CANCEL");
+        mockInterviewRepository.save(mockInterview);
+
+        if (mockInterview.getStudent() != null) {
+            Student student = mockInterview.getStudent();
+            String message = "Hello " + student.getFullName() + ",\n\n"
+                    + "You were marked as a no-show for your mock interview with "
+                    + mentor.getFullName() + " scheduled at "
+                    + mockInterview.getScheduledAt() + ".\n\n"
+                    + "Please schedule a new session at your earliest convenience.\n\n"
+                    + "Khutaa Team";
+            whatsAppService.sendWhatsApp(student.getPhoneNumber(), message);
+        }
     }
 
     public AiInterviewQuestionsDTOOUT createAiInterview(Integer studentId, AiMockInterviewDTOIN dto) {

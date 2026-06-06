@@ -90,7 +90,6 @@ public class MentorService {
 
         applyDto(mentor, dto);
 
-
         mentorRepository.save(mentor);
     }
 

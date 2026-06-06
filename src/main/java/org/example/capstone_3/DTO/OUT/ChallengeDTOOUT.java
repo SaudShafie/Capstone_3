@@ -16,5 +16,4 @@ public class ChallengeDTOOUT {
     private String question;
     private Integer points;
     private String difficulty;
-    private LocalDateTime deadline;
 }

@@ -7,10 +7,7 @@ import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.StudentCvDTOIn;
 import org.example.capstone_3.DTO.IN.StudentDTOIn;
 import org.example.capstone_3.DTO.IN.StudentGithubDTOIn;
-import org.example.capstone_3.DTO.OUT.LeaderboardEntryDTOOut;
-import org.example.capstone_3.DTO.OUT.LeaderboardRankDTOOut;
-import org.example.capstone_3.DTO.OUT.SkillDTOOut;
-import org.example.capstone_3.DTO.OUT.StudentDTOOut;
+import org.example.capstone_3.DTO.OUT.*;
 import org.example.capstone_3.Model.Skill;
 import org.example.capstone_3.Model.Student;
 import org.example.capstone_3.Repository.SkillRepository;
@@ -47,6 +44,9 @@ public class StudentService {
         if (studentRepository.findStudentByEmail(dto.getEmail()) != null) {
             throw new ApiException("Email already exists");
         }
+        if (studentRepository.findStudentByPhoneNumber(dto.getPhoneNumber()) != null) {
+            throw new ApiException("Phone number already exists");
+        }
 
         Student student = new Student();
         applyDto(student, dto);
@@ -74,6 +74,10 @@ public class StudentService {
 
         if (emailOwner != null && !emailOwner.getId().equals(id)) {
             throw new ApiException("Email already exists");
+        }
+
+        if (studentRepository.findStudentByPhoneNumber(dto.getPhoneNumber()) != null) {
+            throw new ApiException("Phone number already exists");
         }
 
         applyDto(student, dto);

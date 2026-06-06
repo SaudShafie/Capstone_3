@@ -6,8 +6,10 @@ import org.example.capstone_3.AI.AiService;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.ChallengeDTOIN;
 import org.example.capstone_3.DTO.OUT.ChallengeDTOOUT;
+import org.example.capstone_3.Model.Admin;
 import org.example.capstone_3.Model.Challenge;
 import org.example.capstone_3.Model.Skill;
+import org.example.capstone_3.Repository.AdminRepository;
 import org.example.capstone_3.Repository.ChallengeRepository;
 import org.example.capstone_3.Repository.SkillRepository;
 import org.springframework.stereotype.Service;
@@ -99,22 +101,6 @@ public class ChallengeService {
         return challengesDTOOUTS;
     }
 
-    public List<ChallengeDTOOUT> closedChallengesBySkill(Integer skillId) {
-        List<ChallengeDTOOUT> challengesDTOOUTS = new ArrayList<>();
-        for (Challenge challenge : challengeRepository.closedChallengesBySkillId(skillId)) {
-            challengesDTOOUTS.add(toDtoOut(challenge));
-        }
-        return challengesDTOOUTS;
-    }
-
-    public List<ChallengeDTOOUT> closedChallengesBySkillAndDifficulty(Integer skillId, String difficulty) {
-        List<ChallengeDTOOUT> challengesDTOOUTS = new ArrayList<>();
-        for (Challenge challenge : challengeRepository.closedChallengesBySkillIdAndDifficulty(skillId, difficulty)) {
-            challengesDTOOUTS.add(toDtoOut(challenge));
-        }
-        return challengesDTOOUTS;
-    }
-
     private void applyDto(Challenge challenge, Integer skillId) {
         challenge.setSkill(findSkill(skillId));
     }
@@ -142,14 +128,12 @@ public class ChallengeService {
     }
 
     private ChallengeDTOOUT toDtoOut(Challenge challenge) {
-        Integer skillId = challenge.getSkill() != null ? challenge.getSkill().getId() : null;
         return new ChallengeDTOOUT(
                 challenge.getId(),
                 challenge.getTitle(),
                 challenge.getQuestion(),
                 challenge.getPoints(),
-                challenge.getDifficulty(),
-                challenge.getDeadline()
+                challenge.getDifficulty()
         );
     }
 
@@ -245,7 +229,7 @@ public class ChallengeService {
                   "title": "write actual title here",
                   "question": "write actual question here",
                   "correctAnswer": "write actual answer here",
-                  "difficulty": "%s",
+                  "difficulty": "%s"
                 }
 
             FIELD RULES:
@@ -316,8 +300,6 @@ public class ChallengeService {
         challenge.setQuestion(questionMatcher.group(1));
         challenge.setCorrectAnswer(correctAnswerMatcher.group(1));
         challenge.setDifficulty(difficulty);
-        challenge.setDeadline(LocalDateTime.now().plusDays(mapDeadlineDays(difficulty)));
-
         return challenge;
     }
 
@@ -326,15 +308,6 @@ public class ChallengeService {
             case "EASY" -> 10;
             case "MEDIUM" -> 20;
             case "HARD" -> 30;
-            default -> throw new AiException("Invalid difficulty: " + difficulty);
-        };
-    }
-
-    private int mapDeadlineDays(String difficulty) {
-        return switch (difficulty) {
-            case "EASY" -> 4;
-            case "MEDIUM" -> 9;
-            case "HARD" -> 13;
             default -> throw new AiException("Invalid difficulty: " + difficulty);
         };
     }

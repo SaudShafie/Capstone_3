@@ -1,7 +1,7 @@
 package org.example.capstone_3.Service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.capstone_3.AI.AiException;
+import org.example.capstone_3.AI.AiJsonParser;
 import org.example.capstone_3.AI.AiService;
 import org.example.capstone_3.Api.ApiException;
 import org.example.capstone_3.DTO.IN.TaskSubmissionDTOIN;
@@ -17,16 +17,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class TaskSubmissionService {
-    private static final Pattern SCORE_PATTERN =
-            Pattern.compile("\"score\"\\s*:\\s*(\\d+)");
-    private static final Pattern FEEDBACK_PATTERN =
-            Pattern.compile("\"feedback\"\\s*:\\s*\"([^\"]+)\"");
 
     private final TaskSubmissionRepository taskSubmissionRepository;
     private final TaskRepository taskRepository;
@@ -182,6 +176,8 @@ public class TaskSubmissionService {
         - Do NOT deduct points for missing comments, code style, or documentation
         - Only deduct for missing functionality, wrong logic, or incomplete implementation
         - Suggestions about comments or style should appear in feedback only, not affect the score
+        - Do not penalize brevity when all required points are covered
+        - For EASY tasks, a concise correct answer should score at least 75
 
         STUDENT ANSWER:
         %s
@@ -195,7 +191,8 @@ public class TaskSubmissionService {
         FIELD RULES:
         - score:
           * integer between 0 and 100
-          * EASY task: full marks for correct basic answer, deduct for missing key points
+          * EASY task: full marks for correct basic answer, deduct for missing key points;
+            concise correct answers should score at least 75
           * MEDIUM task: full marks only for complete and well-reasoned answer
           * HARD task: full marks for a solid, well-explained answer — do NOT require perfection,
             reward good understanding and effort even if not expert-level
@@ -220,17 +217,9 @@ public class TaskSubmissionService {
     }
 
     private String[] parseEvaluationJson(String json) {
-        Matcher scoreMatcher = SCORE_PATTERN.matcher(json);
-        Matcher feedbackMatcher = FEEDBACK_PATTERN.matcher(json);
-
-        if (!scoreMatcher.find()) throw new AiException("AI response did not contain score.");
-        if (!feedbackMatcher.find()) throw new AiException("AI response did not contain feedback.");
-
-        int score = Integer.parseInt(scoreMatcher.group(1));
-        if (score < 0 || score > 100) {
-            throw new AiException("AI generated invalid score (must be 0–100).");
-        }
-
-        return new String[]{String.valueOf(score), feedbackMatcher.group(1)};
+        var node = AiJsonParser.parseObject(json);
+        int score = AiJsonParser.requireInt(node, "score", 0, 100);
+        String feedback = AiJsonParser.requireText(node, "feedback");
+        return new String[]{String.valueOf(score), feedback};
     }
 }

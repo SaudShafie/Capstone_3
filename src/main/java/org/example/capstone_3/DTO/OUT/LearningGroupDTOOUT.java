@@ -19,7 +19,5 @@ public class LearningGroupDTOOUT {
 
     private String description;
 
-    private List<TaskDTOOUT> tasks;
-
     private LocalDateTime createdAt;
 }

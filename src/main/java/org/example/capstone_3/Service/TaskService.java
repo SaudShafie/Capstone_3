@@ -12,7 +12,8 @@ import org.example.capstone_3.Model.Task;
 import org.example.capstone_3.Repository.LearningGroupRepository;
 import org.example.capstone_3.Repository.StudentRepository;
 import org.example.capstone_3.Repository.TaskRepository;
-import org.example.capstone_3.Repository.TaskSubmissionRepository;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
+@EnableScheduling
 public class TaskService {
     // Add these patterns at the top of the class
     private static final Pattern TITLE_PATTERN =
@@ -38,6 +40,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final LearningGroupRepository learningGroupRepository;
     private final StudentRepository studentRepository;
+    private final EmailService emailService;
     private final AiService aiService;
 
     public List<TaskDTOOUT> getAllTasks() {
@@ -72,6 +75,19 @@ public class TaskService {
         task.setCreatedAt(LocalDateTime.now());
         task.setLearningGroup(learningGroup);
         taskRepository.save(task);
+
+        List<Student> members = studentRepository.findStudentsByGroupId(learningGroupId);
+        for(Student student: members){
+            emailService.sendTaskPublishedToStudent(student,task);
+        }
+    }
+
+    @Scheduled(cron = "0 0 10 * * SUN")
+    public void aiPublish(){
+        List<LearningGroup> learningGroups = learningGroupRepository.findAll();
+        for(LearningGroup group: learningGroups){
+            addTask(group.getId());
+        }
     }
 
     public void updateTask(Integer id, TaskDTOIN dto) {
@@ -115,6 +131,26 @@ public class TaskService {
         return unsubmittedTasks;
     }
 
+    public List<TaskDTOOUT> groupOldTasks(Integer learningGroupId){
+        findLearningGroup(learningGroupId);
+
+        List<TaskDTOOUT> oldTasks = new ArrayList<>();
+        for(Task task: taskRepository.groupOldTasks(learningGroupId)){
+            oldTasks.add(convertToDTO(task));
+        }
+        return oldTasks;
+    }
+
+    public List<TaskDTOOUT> groupAvailableTasks(Integer learningGroupId) {
+        findLearningGroup(learningGroupId);
+
+        List<TaskDTOOUT> availableTasks = new ArrayList<>();
+        for (Task task : taskRepository.groupAvailableTasks(learningGroupId)) {
+            availableTasks.add(convertToDTO(task));
+        }
+        return availableTasks;
+    }
+
     private Student findStudent(Integer student_id) {
         Student student = studentRepository.findStudentById(student_id);
         if (student == null) {
@@ -138,8 +174,7 @@ public class TaskService {
                 task.getTitle(),
                 task.getDescription(),
                 task.getDifficulty(),
-                task.getDeadline(),
-                task.getCreatedAt()
+                task.getDeadline()
         );
     }
 
@@ -291,9 +326,9 @@ public class TaskService {
 
     private int mapDeadlineDays(String difficulty) {
         return switch (difficulty) {
-            case "EASY" -> 4;
-            case "MEDIUM" -> 9;
-            case "HARD" -> 13;
+            case "EASY" -> 2;
+            case "MEDIUM" -> 5;
+            case "HARD" -> 7;
             default -> throw new AiException("Invalid difficulty: " + difficulty);
         };
     }

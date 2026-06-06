@@ -1,10 +1,7 @@
 package org.example.capstone_3.Service;
 
 import jakarta.annotation.PostConstruct;
-import org.example.capstone_3.Model.LearningGroup;
-import org.example.capstone_3.Model.Mentor;
-import org.example.capstone_3.Model.MockInterview;
-import org.example.capstone_3.Model.Student;
+import org.example.capstone_3.Model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -208,5 +205,18 @@ public class WhatsAppService {
             return "****";
         }
         return "..." + value.substring(value.length() - 4);
+    }
+
+    public void sendTaskDeadlineReminderToStudent(Student student, Task task) {
+
+        String message = "Hello " + student.getFullName() + "\n\n"
+                + "Reminder: Task deadline is tomorrow!\n\n"
+                + "Task Details:\n"
+                + "Title: " + task.getTitle() + "\n"
+                + "Difficulty: " + task.getDifficulty() + "\n"
+                + "Please make sure to submit on time.\n\n"
+                + "Kutaa team";
+
+        sendWhatsApp(student.getPhoneNumber(), message);
     }
 }

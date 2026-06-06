@@ -4,9 +4,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.capstone_3.Api.ApiResponse;
 import org.example.capstone_3.DTO.IN.LearningGroupDTOIN;
+import org.example.capstone_3.DTO.OUT.LearningGroupDTOOUT;
+import org.example.capstone_3.DTO.OUT.StudentSummaryDTOOut;
 import org.example.capstone_3.Service.LearningGroupService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/learning-group")
@@ -64,5 +68,15 @@ public class LearningGroupController {
     public ResponseEntity<?> inviteStudent(@PathVariable Integer inviter_id, @PathVariable Integer invited_student_id, @PathVariable Integer group_id) {
         learningGroupService.inviteStudentToPrivateGroup(inviter_id, invited_student_id, group_id);
         return ResponseEntity.ok(new ApiResponse("Invitation sent successfully"));
+    }
+
+    @GetMapping("/{learningGroupId}/members")
+    public ResponseEntity<?> groupMembers(@PathVariable Integer learningGroupId) {
+        return ResponseEntity.ok(learningGroupService.groupMembers(learningGroupId));
+    }
+
+    @GetMapping("/student/{studentId}/groups")
+    public ResponseEntity<?> studentGroups(@PathVariable Integer studentId) {
+        return ResponseEntity.ok(learningGroupService.studentGroups(studentId));
     }
 }

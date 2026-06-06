@@ -3,6 +3,7 @@ package org.example.capstone_3.Service;
 import org.example.capstone_3.Model.Mentor;
 import org.example.capstone_3.Model.MockInterview;
 import org.example.capstone_3.Model.Student;
+import org.example.capstone_3.Model.Task;
 
 final class EmailHtmlTemplates {
 
@@ -251,5 +252,53 @@ final class EmailHtmlTemplates {
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;");
+    }
+
+    public static String buildTaskPublishedHtml(Student student, Task task) {
+        String content = """
+            <p style="margin:0 0 16px;font-size:16px;color:#0f172a;">Hello <strong>%s</strong>,</p>
+            <p style="margin:0 0 20px;color:#334155;">A new task has been published in <strong>%s</strong> group.</p>
+            %s
+            <p style="margin:20px 0 0;color:#334155;">Make sure to submit before the deadline. Good luck!</p>
+            """.formatted(
+                escapeHtml(student.getFullName()),
+                escapeHtml(task.getLearningGroup().getName()),
+                detailCard("Task Details", buildTaskDetailsRows(task))
+        );
+
+        return wrapLayout("New Task Published", content);
+    }
+
+    public static String buildTaskPublishedPlainText(Student student, Task task) {
+        return """
+            Hello %s,
+
+            A new task has been published in %s group.
+
+            Task Details:
+            Title: %s
+            Difficulty: %s
+            Points: %s
+            Deadline: %s
+
+            Make sure to submit before the deadline.
+
+            %s Team
+            """.formatted(
+                student.getFullName(),
+                task.getLearningGroup().getName(),
+                task.getTitle(),
+                task.getDifficulty(),
+                task.getPoints(),
+                task.getDeadline(),
+                SYSTEM_NAME
+        );
+    }
+
+    private static String buildTaskDetailsRows(Task task) {
+        return detailRow("Title", task.getTitle())
+                + detailRow("Difficulty", task.getDifficulty())
+                + detailRow("Points", String.valueOf(task.getPoints()))
+                + detailRow("Deadline", String.valueOf(task.getDeadline()));
     }
 }

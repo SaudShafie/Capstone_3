@@ -16,4 +16,12 @@ public interface TaskRepository extends JpaRepository<Task,Integer> {
 
     @Query("select t from Task t where t.learningGroup.id = ?1 and t.id not in (select ts.task.id from TaskSubmission ts where ts.student.id = ?2)")
     List<Task> findUnsubmittedTasksByGroupAndStudent(Integer groupId, Integer studentId);
+
+    @Query("select t from Task t where t.learningGroup.id=?1 and t.deadline < CURRENT_TIMESTAMP")
+    List<Task> groupOldTasks (Integer groupId);
+
+    @Query("select t from Task t where t.learningGroup.id=?1 and t.deadline > CURRENT_TIMESTAMP")
+    List<Task> groupAvailableTasks (Integer groupId);
+
+    List<Task> findTasksByWhatsappReminderSentFalse();
 }

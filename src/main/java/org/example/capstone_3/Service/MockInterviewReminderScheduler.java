@@ -1,10 +1,10 @@
 package org.example.capstone_3.Service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.capstone_3.Model.Mentor;
-import org.example.capstone_3.Model.MockInterview;
-import org.example.capstone_3.Model.Student;
+import org.example.capstone_3.Model.*;
 import org.example.capstone_3.Repository.MockInterviewRepository;
+import org.example.capstone_3.Repository.StudentRepository;
+import org.example.capstone_3.Repository.TaskRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +15,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MockInterviewReminderScheduler {
 
+    private final TaskRepository taskRepository;
+    private final StudentRepository studentRepository;
     private final MockInterviewRepository mockInterviewRepository;
     private final WhatsAppService whatsAppService;
+
 
     @Scheduled(fixedRate = 60000)
     public void sendUpcomingInterviewReminders() {
@@ -62,6 +65,46 @@ public class MockInterviewReminderScheduler {
 
             mockInterview.setWhatsappReminderSent(true);
             mockInterviewRepository.save(mockInterview);
+        }
+    }
+
+    @Scheduled(fixedRate = 60000)
+    public void sendUpcomingTaskDeadlineReminders() {
+
+        List<Task> tasks = taskRepository.findTasksByWhatsappReminderSentFalse();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Task task : tasks) {
+
+            if (task.getDeadline() == null) {
+                continue;
+            }
+
+            LearningGroup learningGroup = task.getLearningGroup();
+            if (learningGroup == null) {
+                continue;
+            }
+
+            List<Student> students = studentRepository.findStudentsByGroupId(learningGroup.getId());
+            if (students == null || students.isEmpty()) {
+                continue;
+            }
+
+            LocalDateTime reminderTime = task.getDeadline().minusHours(24);
+
+            boolean isReminderTime = !now.isBefore(reminderTime) && now.isBefore(task.getDeadline());
+
+            if (!isReminderTime) {
+                continue;
+            }
+
+            for (Student student : students) {
+                whatsAppService.sendTaskDeadlineReminderToStudent(student, task);
+            }
+
+            task.setWhatsappReminderSent(true);
+            taskRepository.save(task);
         }
     }
 }

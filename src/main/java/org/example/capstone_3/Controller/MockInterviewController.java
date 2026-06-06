@@ -6,6 +6,7 @@ import org.example.capstone_3.Api.ApiResponse;
 import org.example.capstone_3.DTO.IN.AiInterviewAnswerDTOIN;
 import org.example.capstone_3.DTO.IN.AiMockInterviewDTOIN;
 import org.example.capstone_3.DTO.IN.MockInterviewDTOIN;
+import org.example.capstone_3.DTO.IN.MockInterviewRescheduleDTOIn;
 import org.example.capstone_3.Service.MockInterviewService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,11 @@ public class MockInterviewController {
     @GetMapping("/get")
     public ResponseEntity<?> get() {
         return ResponseEntity.ok(mockInterviewService.getAll());
+    }
+
+    @GetMapping("/student/{studentId}/history")
+    public ResponseEntity<?> getStudentHistory(@PathVariable Integer studentId) {
+        return ResponseEntity.ok(mockInterviewService.getStudentHistory(studentId));
     }
 
     @GetMapping("/get/{id}")
@@ -51,6 +57,29 @@ public class MockInterviewController {
                                                    @PathVariable Integer mockInterviewId) {
         mockInterviewService.acceptMentorInterview(mentorId, mockInterviewId);
         return ResponseEntity.ok().body(new ApiResponse("Mock interview has been scheduled successfully"));
+    }
+
+    @PutMapping("/mentor/reject/{mentorId}/{mockInterviewId}")
+    public ResponseEntity<?> rejectMentorInterview(@PathVariable Integer mentorId, @PathVariable Integer mockInterviewId) {
+        mockInterviewService.rejectMentorInterview(mentorId, mockInterviewId);
+        return ResponseEntity.ok(new ApiResponse("Mock interview has been rejected successfully"));
+    }
+
+    @PutMapping("/mentor/reschedule/{mentorId}/{mockInterviewId}")
+    public ResponseEntity<?> rescheduleMentorInterview(@PathVariable Integer mentorId, @PathVariable Integer mockInterviewId, @RequestBody @Valid MockInterviewRescheduleDTOIn dto) {
+        mockInterviewService.rescheduleMentorInterview(mentorId, mockInterviewId, dto);
+        return ResponseEntity.ok(new ApiResponse("Mock interview has been rescheduled successfully"));
+    }
+
+    @PutMapping("/mentor/no-show/{mentorId}/{mockInterviewId}")
+    public ResponseEntity<?> markStudentNoShow(@PathVariable Integer mentorId, @PathVariable Integer mockInterviewId) {
+        mockInterviewService.markStudentNoShow(mentorId, mockInterviewId);
+        return ResponseEntity.ok(new ApiResponse("Student has been marked as no-show"));
+    }
+
+    @GetMapping("/mentor/{mentorId}/schedule")
+    public ResponseEntity<?> getMentorSchedule(@PathVariable Integer mentorId) {
+        return ResponseEntity.ok(mockInterviewService.getMentorSchedule(mentorId));
     }
 
     @PostMapping("/ai/add/{studentId}")
